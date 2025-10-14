@@ -2475,4 +2475,8 @@ player.CharacterAdded:Connect(function(char)
 	Menu.playerData.humanoidRootPart = char:WaitForChild("HumanoidRootPart")
 end)
 
+<<<<<<< HEAD
 RefreshPlayers()
+=======
+RefreshPlayers()
+>>>>>>> b476e44213c61970fddc0c61eda2d4d17409babf
