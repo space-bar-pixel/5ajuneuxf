@@ -7,6 +7,11 @@ ConfigManager.__index = ConfigManager
 -- 🗂️ INTERNAL HELPERS
 -----------------------------------------------------
 local function ensureFolder(path)
+    if type(path) ~= "string" then
+        warn("[ConfigManager] ensureFolder expected string, got " .. typeof(path))
+        return
+    end
+
     if not isfolder or not makefolder then
         return
     end
@@ -25,7 +30,6 @@ local function ensureFolder(path)
     end
 end
 
-
 local function getFileNameOnly(path)
 	return path:match("([^/\\]+)%.json$")
 end
@@ -34,18 +38,19 @@ end
 -- 🧠 CREATE NEW MANAGER
 -----------------------------------------------------
 function ConfigManager.new(defaults, folderPath, fileName)
-	ensureFolder(folderPath or "configs")
+	folderPath = folderPath or "configs"
+	fileName = fileName or "default.json"
+
+	ensureFolder(folderPath)
 
 	local self = setmetatable({}, ConfigManager)
 	self.defaults = defaults or {}
-	self.folderPath = folderPath or "configs"
-	self.fileName = fileName or "default.json"
+	self.folderPath = folderPath
+	self.fileName = fileName
 	self.filePath = self.folderPath .. "/" .. self.fileName
 	self.config = {}
 
-	-- Auto-load on creation
 	self:Load()
-
 	return self
 end
 
@@ -120,7 +125,6 @@ end
 -----------------------------------------------------
 -- 🧩 LIST VALUE SUPPORT
 -----------------------------------------------------
--- Set or update a table/list type value
 function ConfigManager:SetList(path, list)
 	if type(list) ~= "table" then
 		error("Expected table for SetList(path, list)")
@@ -128,7 +132,6 @@ function ConfigManager:SetList(path, list)
 	self:Set(path, list)
 end
 
--- Get list (returns {} if not found)
 function ConfigManager:GetList(path)
 	local value = self:Get(path)
 	if type(value) ~= "table" then
