@@ -61,6 +61,7 @@ local FruitSec1 = FruitTab:Section({ Side = "Left" })
 local dupeSec1 = DupeTab:Section({ Side = "Left" })
 
 local SettingGroup = Window:TabGroup()
+local Misc = SettingGroup:Tab({ Name = "Misc", Image = "" })
 local Setting = SettingGroup:Tab({ Name = "Setting", Image = "" })
 local settingSec1 = Setting:Section({ Side = "Left" })
 local settingSec2 = Setting:Section({ Side = "Left" })
@@ -1388,17 +1389,21 @@ end
 -- Config Module (Fixed)
 -----------------------------------------------------------
 
-local CONFIG_DIR = "PizzaHub/configs"
+local CONFIG_DIR = "PizzaHub" .. Menu.playerData.userName .. "/configs"
 local ACTIVE_CONFIG = "default"
 local currentConfig = {}
 
 -- Ensure folder exists
-if not isfolder(CONFIG_DIR) then
+if not isfolder(BASE_DIR) then
+	makefolder(BASE_DIR)
+end
+
+if not isfolder(CONFIG_DIR) then  
 	makefolder(CONFIG_DIR)
 end
 
 -----------------------------------------------------------
--- 🧱 Utility
+-- Utility
 -----------------------------------------------------------
 
 local function listConfigs()
@@ -1407,6 +1412,7 @@ local function listConfigs()
 	for _, file in ipairs(files) do
 		if file:match("%.json$") then
 			table.insert(names, file:match("([^/]+)%.json$"))
+			print(file:match("([^/]+)%.json$"))
 		end
 	end
 	table.sort(names)
@@ -1418,7 +1424,7 @@ local function getConfigPath(name)
 end
 
 -----------------------------------------------------------
--- 💾 Save / Load
+-- Save / Load
 -----------------------------------------------------------
 
 local function saveConfig(name)
@@ -1430,6 +1436,11 @@ local function saveConfig(name)
 	if ok then
 		writefile(path, encoded)
 		print("[Config] Saved:", name)
+		Window:Notify({
+		Title = "[Config] Save",
+			Description = "Saved config: " .. name,
+			Lifetime = 3
+		})
 	else
 		warn("[Config] Encode failed:", encoded)
 	end
@@ -1490,13 +1501,13 @@ local function loadConfig(name)
 end
 
 -----------------------------------------------------------
--- 🆕 Create / Delete
+-- Create / Delete
 -----------------------------------------------------------
 
 local function newConfig(name)
 	if not name or name == "" then
 		return warn("[Config] Invalid name")
-	end
+	end	
 	currentConfig = {}
 	ACTIVE_CONFIG = name
 	saveConfig(name)
@@ -1517,7 +1528,7 @@ local function deleteConfig(name)
 end
 
 -----------------------------------------------------------
--- 🧠 Get / Set
+-- Get / Set
 -----------------------------------------------------------
 
 local function setConfig(key, value, autosave)
@@ -1537,7 +1548,7 @@ end
 -----------------------------------------------------------
 -- Initialization
 -----------------------------------------------------------
--- loadConfig(ACTIVE_CONFIG)
+loadConfig(ACTIVE_CONFIG)
 
 -- State vars
 local islandName = player:GetAttribute("AssignedIslandName")
@@ -1803,7 +1814,6 @@ local MutsDropdown1 = Menu.tabs.main.right:Dropdown({
 })
 
 -- Input box for total to give
-
 local totalInput = Menu.tabs.main.right:Input({
 	Name = "Total",
 	Placeholder = "Enter total",
@@ -2087,7 +2097,7 @@ local AutoPlantsToggle = Menu.tabs.egg.left1:Toggle({
 							local pos = strToVector3(plant.coord)
 							local eggId = queue[eggIndex]
 							
-							player.Character.HumanoidRootPart.CFrame = CFrame.new(pos + Vector3.new(0, 5, 0))
+							-- player.Character.HumanoidRootPart.CFrame = CFrame.new(pos + Vector3.new(0, 5, 0))
 
 							pcall(function() DeployRE:FireServer({ event = "deploy", uid = eggId }) end)
 							task.wait(0.1)
@@ -2119,16 +2129,21 @@ local AutoPlantsToggle = Menu.tabs.egg.left1:Toggle({
 Menu.tabs.egg.left1:Button({
 	Name = "Hatch All Eggs",
 	Callback = function()
-		local HatchScript = player.PlayerScripts.LocalScriptAttach.RunTime:FindFirstChild("CS_HatchEgg")
-
 		for _, block in ipairs(PlayerBuiltBlocks:GetChildren()) do
 			local root = block:FindFirstChild("RootPart")
 			if root then
 				local prompt = root:FindFirstChildOfClass("ProximityPrompt")
 				if prompt then
-					task.spawn(function()
-						fireproximityprompt(prompt, 0)
-					end)
+					if type(prompt.Trigger) == "function" then
+						pcall(function() prompt:Trigger() end)
+					elseif type(prompt.InputHoldBegin) == "function" then
+						-- simulate a hold
+						pcall(function() prompt:InputHoldBegin() end)
+						task.wait(prompt.HoldDuration or 0.2)
+						pcall(function() prompt:InputHoldEnd() end)
+					else
+						warn("No programmatic trigger method available on this client.")
+					end
 				end
 			end
 		end
@@ -2139,30 +2154,42 @@ local island = workspace.Art:FindFirstChild(islandName)
 local conveyor9, belt
 
 if island and island:FindFirstChild("ENV") then
-	local conveyor = island.ENV:FindFirstChild("Conveyor")
-	if conveyor then
-		conveyor9 = conveyor:FindFirstChild("Conveyor9")
-		if conveyor9 then
-			belt = conveyor9:FindFirstChild("Belt")
+	local conveyorFolder = island.ENV:FindFirstChild("Conveyor")
+	if conveyorFolder then
+		for _, conveyor in ipairs(conveyorFolder:GetChildren()) do
+			if conveyor:IsA("Model") and conveyor.Name:match("^Conveyor%d+$") then
+				local foundBelt = conveyor:FindFirstChild("Belt")
+				if foundBelt then
+					belt = foundBelt
+					conveyor9 = conveyor
+					break
+				end
+			end
 		end
 	end
 end
 
 local function getAllEggOnBelt()
 	local results = {}
-	if not belt then return results end
+	if not belt then
+		return results
+	end
 
 	for _, obj in ipairs(belt:GetChildren()) do
 		local rootPart = obj:FindFirstChild("RootPart")
-		if not rootPart then continue end
+		if not rootPart then
+			continue
+		end
 
 		local gui = rootPart:FindFirstChild("GUI/EggGUI")
-		if not gui then continue end
+		if not gui then
+			continue
+		end
 
 		local eggNameObj = gui:FindFirstChild("EggName")
 		local mutateObj = gui:FindFirstChild("Mutate")
 
-		if eggNameObj and eggNameObj:IsA("TextLabel") and mutateObj and mutateObj:IsA("TextLabel") then
+		if eggNameObj and mutateObj then
 			local eggName = eggNameObj.Text ~= "" and eggNameObj.Text or "Unknown"
 			local mutateValue = mutateObj.Text ~= "" and mutateObj.Text or "Dino"
 
@@ -2172,6 +2199,10 @@ local function getAllEggOnBelt()
 				mutate = mutateValue
 			})
 		end
+	end
+
+	for i, egg in ipairs(results) do
+		print(string.format("[%d] %s | Name: %s | Mutate: %s", i, egg.fullname, egg.name, egg.mutate))
 	end
 
 	return results
@@ -2220,8 +2251,9 @@ local AutoBuyEToggle = Menu.tabs.egg.right1:Toggle({
 	Name = "Automatic buy",
 	Default = getConfig("Eggs.AutoBuy", false),
 	Callback = function(state)
+		setConfig("Eggs.AutoBuy", state)
+
 		autoBuyEggs = state
-		setConfig("Eggs.AutoBuy", state) -- save
 
 		if state then
 			task.spawn(function()
@@ -2231,7 +2263,9 @@ local AutoBuyEToggle = Menu.tabs.egg.right1:Toggle({
 						local matchEgg = table.find(selectedEggName, egg.name)
 						local matchMut = table.find(selectedMutName, egg.mutate)
 						if matchEgg and matchMut then
-							pcall(function() CharacterRE:FireServer("BuyEgg", egg.fullname) end)
+							pcall(function()
+								CharacterRE:FireServer("BuyEgg", egg.fullname)
+							end)
 						end
 					end
 					task.wait(0.3)
@@ -2316,15 +2350,7 @@ local AutoBuyFToggle = Menu.tabs.fruit.left1:Toggle({
 Menu.tabs.dupe.dupeSec1:Button({
 	Name = "Start Dupe",
 	Callback = function()
-
-		local object = game:GetService("ReplicatedStorage").Remote.PetRE
-		local args = {
-			"Sell",
-			"f16d33374b2746faac49438b78b2cc70"
-		}
-
-		object:FireServer(unpack(args))
-
+		getAllEggOnBelt()
 	end
 })
 
@@ -2476,8 +2502,4 @@ player.CharacterAdded:Connect(function(char)
 	Menu.playerData.humanoidRootPart = char:WaitForChild("HumanoidRootPart")
 end)
 
-<<<<<<< HEAD
 RefreshPlayers()
-=======
-RefreshPlayers()
->>>>>>> b476e44213c61970fddc0c61eda2d4d17409babf
