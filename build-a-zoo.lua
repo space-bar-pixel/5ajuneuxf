@@ -15,7 +15,16 @@ local State = {
 }
 
 -- Create UI window
-local Window = MacLib:Window({ Title = "Pizza Hub - Build a Zoo", Size = UDim2.fromOffset(900, 650) })
+local Window = MacLib:Window({
+    Title = "Pizza Hub - Build a Zoo",
+    Subtitle = "",
+    Size = UDim2.fromOffset(900, 650),
+    DragStyle = 1,
+    DisabledWindowControls = {},
+    ShowUserInfo = false,
+    Keybind = Enum.KeyCode.RightControl,
+    AcrylicBlur = true,
+})
 
 -- Simple tab layout used by features (adapts to the expected Menu.tabs.* shape)
 local tabs = {}
