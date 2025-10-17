@@ -4,7 +4,7 @@ local ConfigManager = {}
 ConfigManager.__index = ConfigManager
 
 -----------------------------------------------------
--- 🗂️ INTERNAL HELPERS
+-- INTERNAL HELPERS
 -----------------------------------------------------
 local function ensureFolder(path)
     if type(path) ~= "string" then
@@ -35,7 +35,7 @@ local function getFileNameOnly(path)
 end
 
 -----------------------------------------------------
--- 🧠 CREATE NEW MANAGER
+-- CREATE NEW MANAGER
 -----------------------------------------------------
 function ConfigManager.new(defaults, folderPath, fileName)
 	folderPath = folderPath or "configs"
@@ -55,7 +55,7 @@ function ConfigManager.new(defaults, folderPath, fileName)
 end
 
 -----------------------------------------------------
--- 📖 LOAD / SAVE
+-- LOAD / SAVE
 -----------------------------------------------------
 function ConfigManager:Load()
 	if isfile(self.filePath) then
@@ -79,7 +79,7 @@ function ConfigManager:Save()
 end
 
 -----------------------------------------------------
--- 🔁 MERGE DEFAULTS
+-- MERGE DEFAULTS
 -----------------------------------------------------
 function ConfigManager:Merge(defaults, loaded)
 	local result = {}
@@ -99,7 +99,7 @@ function ConfigManager:Merge(defaults, loaded)
 end
 
 -----------------------------------------------------
--- ⚙️ GET / SET VALUE
+-- GET / SET VALUE
 -----------------------------------------------------
 function ConfigManager:Get(path)
 	local parts = string.split(path, ".")
@@ -123,7 +123,7 @@ function ConfigManager:Set(path, value)
 end
 
 -----------------------------------------------------
--- 🧩 LIST VALUE SUPPORT
+-- LIST VALUE SUPPORT
 -----------------------------------------------------
 function ConfigManager:SetList(path, list)
 	if type(list) ~= "table" then
@@ -141,7 +141,7 @@ function ConfigManager:GetList(path)
 end
 
 -----------------------------------------------------
--- 📂 MULTI-CONFIG MANAGEMENT
+-- MULTI-CONFIG MANAGEMENT
 -----------------------------------------------------
 function ConfigManager.CreateConfig(folderPath, name)
 	folderPath = folderPath or "configs"
@@ -167,7 +167,7 @@ function ConfigManager.LoadConfig(defaults, folderPath, name)
 end
 
 -----------------------------------------------------
--- ✅ SAVE CHANGES IMMEDIATELY
+-- SAVE CHANGES IMMEDIATELY
 -----------------------------------------------------
 function ConfigManager:SetAndSave(path, value)
 	self:Set(path, value)
