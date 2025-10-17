@@ -1,1426 +1,18 @@
 local MacLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/space-bar-pixel/5ajuneuxf/refs/heads/main/module/maclib.lua"))()
 local ConfigManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/space-bar-pixel/5ajuneuxf/refs/heads/main/module/ConfigManager.lua"))()
+local Helpers = loadstring(game:HttpGet("https://raw.githubusercontent.com/space-bar-pixel/5ajuneuxf/refs/heads/main/module/Helpers.lua"))()
+local Data = loadstring(game:HttpGet("https://raw.githubusercontent.com/space-bar-pixel/5ajuneuxf/refs/heads/main/module/Data.lua"))()
+local Gift = loadstring(game:HttpGet("https://raw.githubusercontent.com/space-bar-pixel/5ajuneuxf/refs/heads/main/module/Gift.lua"))()
+local Dupe = loadstring(game:HttpGet("https://raw.githubusercontent.com/space-bar-pixel/5ajuneuxf/refs/heads/main/module/Dupe.lua"))()
 
--- Services
-local Players = game:GetService("Players")
-local player = Players.LocalPlayer
-local RunService = game:GetService("RunService")
-local HttpService = game:GetService("HttpService")
-local VirtualUser = game:GetService("VirtualUser")
-local UserInputService = game:GetService("UserInputService")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local VirtualInputManager = game:GetService("VirtualInputManager")
-
-local blocksFolder = workspace:FindFirstChild("PlayerBuiltBlocks")
-local PlayerBuiltBlocks = workspace:WaitForChild("PlayerBuiltBlocks")
-
--- Remotes
-local GiftRE = ReplicatedStorage:WaitForChild("Remote"):WaitForChild("GiftRE")
-local DeployRE = ReplicatedStorage:WaitForChild("Remote"):WaitForChild("DeployRE")
-local CharacterRE = ReplicatedStorage:WaitForChild("Remote"):WaitForChild("CharacterRE")
-local FoodStoreRE = ReplicatedStorage:WaitForChild("Remote"):WaitForChild("FoodStoreRE")
-
--- Helpers
-local function getHumanoidRoot()
-	if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-		return player.Character.HumanoidRootPart
-	end
-	return nil
-end
-
--- Window (MacLib)
-local Window = MacLib:Window({
-	Title = "Pizza Hub",
-	Subtitle = "Free | V0.1",
-	Size = UDim2.fromOffset(868, 650),
-	DragStyle = 1,
-	DisabledWindowControls = {},
-	ShowUserInfo = true,
-	Keybind = Enum.KeyCode.RightControl,
-	AcrylicBlur = true,
+-- Load GiftFeature and mount it (feature owns Start/Pause/Cancel now)
+local GiftFeature = loadstring(game:HttpGet("https://raw.githubusercontent.com/space-bar-pixel/5ajuneuxf/refs/heads/main/module/Features/GiftFeature.lua"))()
+local giftMount = GiftFeature.mount({
+	sections = { left2 = Menu.tabs.main.left2, main = { left2 = Menu.tabs.main.left2 } },
+	services = { Players = Players, Window = Window, remoteService = remoteService, Data = Menu.data },
+	state = State,
 })
 
------------------------------------------------------------
--- Define Sections (your structure)
------------------------------------------------------------
-local MainGroup = Window:TabGroup()
-local mainTab = MainGroup:Tab({ Name = "Main", Image = "" })
-local mainSecLeft1 = mainTab:Section({ Side = "Left" })
-local mainSecLeft2 = mainTab:Section({ Side = "Left" })
-local mainSecRight = mainTab:Section({ Side = "Right" })
-local AutoTab = MainGroup:Tab({ Name = "AutoFarm", Image = "" })
-local autoSec1 = AutoTab:Section({ Side = "Left" })
-
-local SubGroup = Window:TabGroup()
-local EggTab = SubGroup:Tab({ Name = "Egg", Image = "" })
-local FruitTab = SubGroup:Tab({ Name = "Fruit", Image = "" })
-local DupeTab = SubGroup:Tab({ Name = "Dupe", Image = "" })
-local eggSec1 = EggTab:Section({ Side = "Left" })
-local eggSec2 = EggTab:Section({ Side = "Right" })
-local FruitSec1 = FruitTab:Section({ Side = "Left" })
-local dupeSec1 = DupeTab:Section({ Side = "Left" })
-
-local SettingGroup = Window:TabGroup()
-local Misc = SettingGroup:Tab({ Name = "Misc", Image = "" })
-local Setting = SettingGroup:Tab({ Name = "Setting", Image = "" })
-local settingSec1 = Setting:Section({ Side = "Left" })
-local settingSec2 = Setting:Section({ Side = "Left" })
-local settingSec3 = Setting:Section({ Side = "Right" })
-
------------------------------------------------------------
--- Menu Table
------------------------------------------------------------
-local Menu = {
-	playerData = {
-        player = player,
-        humanoidRootPart = getHumanoidRoot(),
-        userName = player.Name,
-        userId = player.UserId
-    },
-	tabs = {
-		main = { 
-			left1 = mainSecLeft1, 
-			left2 = mainSecLeft2, 
-			right = mainSecRight 
-		},
-		egg = { 
-			left1 = eggSec1, 
-			right1 = eggSec2 
-		},
-		fruit = { 
-			left1 = FruitSec1 
-		},
-		dupe = { 
-			dupeSec1 = dupeSec1
-		},
-		auto = { 
-			autoSec1 = autoSec1 
-		},
-		setting = { 
-			settingSec1 = settingSec1, 
-			settingSec2 = settingSec2, 
-			settingSec3 = settingSec3 
-		}
-	},
-	system = {
-		keyBind = Enum.KeyCode.K
-	},
-	data = {
-		plants = {
-			Island_1 = {
-				mountain = {
-					{id="1", coord="-180, 16, 4", empty=true},
-					{id="2", coord="-172, 16, 4", empty=true},
-					{id="3", coord="-164, 16, 4", empty=true},
-					{id="4", coord="-156, 16, 4", empty=true},
-					{id="5", coord="-148, 16, 4", empty=true},
-					{id="6", coord="-140, 16, 4", empty=true},
-					{id="7", coord="-132, 16, 4", empty=true},
-					{id="8", coord="-124, 16, 4", empty=true},
-					{id="9", coord="-116, 16, 4", empty=true},
-					{id="10", coord="-108, 16, 4", empty=true},
-					{id="11", coord="-100, 16, 4", empty=true},
-					{id="12", coord="-92, 16, 4", empty=true},
-					{id="13", coord="-84, 16, 4", empty=true},
-					{id="14", coord="-76, 16, 4", empty=true},
-					{id="15", coord="-68, 16, 4", empty=true},
-					{id="16", coord="-60, 16, 4", empty=true},
-					{id="17", coord="-52, 16, 4", empty=true},
-					{id="18", coord="-44, 16, 4", empty=true},
-					{id="19", coord="-180, 16, -4", empty=true},
-					{id="20", coord="-172, 16, -4", empty=true},
-					{id="21", coord="-164, 16, -4", empty=true},
-					{id="22", coord="-156, 16, -4", empty=true},
-					{id="23", coord="-148, 16, -4", empty=true},
-					{id="24", coord="-140, 16, -4", empty=true},
-					{id="25", coord="-132, 16, -4", empty=true},
-					{id="26", coord="-124, 16, -4", empty=true},
-					{id="27", coord="-116, 16, -4", empty=true},
-					{id="28", coord="-108, 16, -4", empty=true},
-					{id="29", coord="-100, 16, -4", empty=true},
-					{id="30", coord="-92, 16, -4", empty=true},
-					{id="31", coord="-84, 16, -4", empty=true},
-					{id="32", coord="-76, 16, -4", empty=true},
-					{id="33", coord="-68, 16, -4", empty=true},
-					{id="34", coord="-60, 16, -4", empty=true},
-					{id="35", coord="-52, 16, -4", empty=true},
-					{id="36", coord="-44, 16, -4", empty=true},
-					{id="37", coord="-180, 16, -12", empty=true},
-					{id="38", coord="-172, 16, -12", empty=true},
-					{id="39", coord="-164, 16, -12", empty=true},
-					{id="40", coord="-156, 16, -12", empty=true},
-					{id="41", coord="-148, 16, -12", empty=true},
-					{id="42", coord="-140, 16, -12", empty=true},
-					{id="43", coord="-132, 16, -12", empty=true},
-					{id="44", coord="-124, 16, -12", empty=true},
-					{id="45", coord="-116, 16, -12", empty=true},
-					{id="46", coord="-108, 16, -12", empty=true},
-					{id="47", coord="-100, 16, -12", empty=true},
-					{id="48", coord="-92, 16, -12", empty=true},
-					{id="49", coord="-84, 16, -12", empty=true},
-					{id="50", coord="-76, 16, -12", empty=true},
-					{id="51", coord="-68, 16, -12", empty=true},
-					{id="52", coord="-60, 16, -12", empty=true},
-					{id="53", coord="-52, 16, -12", empty=true},
-					{id="54", coord="-44, 16, -12", empty=true},
-					{id="55", coord="-180, 16, -20", empty=true},
-					{id="56", coord="-172, 16, -20", empty=true},
-					{id="57", coord="-164, 16, -20", empty=true},
-					{id="58", coord="-156, 16, -20", empty=true},
-					{id="59", coord="-148, 16, -20", empty=true},
-					{id="60", coord="-140, 16, -20", empty=true},
-					{id="61", coord="-132, 16, -20", empty=true},
-					{id="62", coord="-124, 16, -20", empty=true},
-					{id="63", coord="-116, 16, -20", empty=true},
-					{id="64", coord="-108, 16, -20", empty=true},
-					{id="65", coord="-100, 16, -20", empty=true},
-					{id="66", coord="-92, 16, -20", empty=true},
-					{id="67", coord="-84, 16, -20", empty=true},
-					{id="68", coord="-76, 16, -20", empty=true},
-					{id="69", coord="-68, 16, -20", empty=true},
-					{id="70", coord="-60, 16, -20", empty=true},
-					{id="71", coord="-52, 16, -20", empty=true},
-					{id="72", coord="-44, 16, -20", empty=true},
-					{id="73", coord="-180, 16, -28", empty=true},
-					{id="74", coord="-172, 16, -28", empty=true},
-					{id="75", coord="-164, 16, -28", empty=true},
-					{id="76", coord="-156, 16, -28", empty=true},
-					{id="77", coord="-148, 16, -28", empty=true},
-					{id="78", coord="-140, 16, -28", empty=true},
-					{id="79", coord="-132, 16, -28", empty=true},
-					{id="80", coord="-124, 16, -28", empty=true},
-					{id="81", coord="-116, 16, -28", empty=true},
-					{id="82", coord="-108, 16, -28", empty=true},
-					{id="83", coord="-100, 16, -28", empty=true},
-					{id="84", coord="-92, 16, -28", empty=true},
-					{id="85", coord="-84, 16, -28", empty=true},
-					{id="86", coord="-76, 16, -28", empty=true},
-					{id="87", coord="-68, 16, -28", empty=true},
-					{id="88", coord="-60, 16, -28", empty=true},
-					{id="89", coord="-52, 16, -28", empty=true},
-					{id="90", coord="-44, 16, -28", empty=true},
-					{id="91", coord="-180, 16, -36", empty=true},
-					{id="92", coord="-172, 16, -36", empty=true},
-					{id="93", coord="-164, 16, -36", empty=true},
-					{id="94", coord="-156, 16, -36", empty=true},
-					{id="95", coord="-148, 16, -36", empty=true},
-					{id="96", coord="-140, 16, -36", empty=true},
-					{id="97", coord="-132, 16, -36", empty=true},
-					{id="98", coord="-124, 16, -36", empty=true},
-					{id="99", coord="-116, 16, -36", empty=true},
-					{id="100", coord="-108, 16, -36", empty=true},
-					{id="101", coord="-100, 16, -36", empty=true},
-					{id="102", coord="-92, 16, -36", empty=true},
-					{id="103", coord="-84, 16, -36", empty=true},
-					{id="104", coord="-76, 16, -36", empty=true},
-					{id="105", coord="-68, 16, -36", empty=true},
-					{id="106", coord="-60, 16, -36", empty=true},
-					{id="107", coord="-52, 16, -36", empty=true},
-					{id="108", coord="-44, 16, -36", empty=true},
-					{id="109", coord="-164, 16, -44", empty=true},
-					{id="110", coord="-156, 16, -44", empty=true},
-					{id="111", coord="-148, 16, -44", empty=true},
-					{id="112", coord="-140, 16, -44", empty=true},
-					{id="113", coord="-132, 16, -44", empty=true},
-					{id="114", coord="-124, 16, -44", empty=true},
-					{id="115", coord="-116, 16, -44", empty=true},
-					{id="116", coord="-108, 16, -44", empty=true},
-					{id="117", coord="-100, 16, -44", empty=true},
-					{id="118", coord="-92, 16, -44", empty=true},
-					{id="119", coord="-84, 16, -44", empty=true},
-					{id="120", coord="-76, 16, -44", empty=true},
-					{id="121", coord="-68, 16, -44", empty=true},
-					{id="122", coord="-60, 16, -44", empty=true},
-					{id="123", coord="-164, 16, -52", empty=true},
-					{id="124", coord="-156, 16, -52", empty=true},
-					{id="125", coord="-148, 16, -52", empty=true},
-					{id="126", coord="-140, 16, -52", empty=true},
-					{id="127", coord="-132, 16, -52", empty=true},
-					{id="128", coord="-124, 16, -52", empty=true},
-					{id="129", coord="-116, 16, -52", empty=true},
-					{id="130", coord="-108, 16, -52", empty=true},
-					{id="131", coord="-100, 16, -52", empty=true},
-					{id="132", coord="-92, 16, -52", empty=true},
-					{id="133", coord="-84, 16, -52", empty=true},
-					{id="134", coord="-76, 16, -52", empty=true},
-					{id="135", coord="-68, 16, -52", empty=true},
-					{id="136", coord="-60, 16, -52", empty=true},
-					{id="137", coord="-164, 16, -60", empty=true},
-					{id="138", coord="-156, 16, -60", empty=true},
-					{id="139", coord="-148, 16, -60", empty=true},
-					{id="140", coord="-140, 16, -60", empty=true},
-					{id="141", coord="-132, 16, -60", empty=true},
-					{id="142", coord="-124, 16, -60", empty=true},
-					{id="143", coord="-116, 16, -60", empty=true},
-					{id="144", coord="-108, 16, -60", empty=true},
-					{id="145", coord="-100, 16, -60", empty=true},
-					{id="146", coord="-92, 16, -60", empty=true},
-					{id="147", coord="-84, 16, -60", empty=true},
-					{id="148", coord="-76, 16, -60", empty=true},
-					{id="149", coord="-68, 16, -60", empty=true},
-					{id="150", coord="-60, 16, -60", empty=true},
-					{id="151", coord="-164, 16, -68", empty=true},
-					{id="152", coord="-156, 16, -68", empty=true},
-					{id="153", coord="-148, 16, -68", empty=true},
-					{id="154", coord="-140, 16, -68", empty=true},
-					{id="155", coord="-132, 16, -68", empty=true},
-					{id="156", coord="-124, 16, -68", empty=true},
-					{id="157", coord="-116, 16, -68", empty=true},
-					{id="158", coord="-108, 16, -68", empty=true},
-					{id="159", coord="-100, 16, -68", empty=true},
-					{id="160", coord="-92, 16, -68", empty=true},
-					{id="161", coord="-84, 16, -68", empty=true},
-					{id="162", coord="-76, 16, -68", empty=true},
-					{id="163", coord="-68, 16, -68", empty=true},
-					{id="164", coord="-60, 16, -68", empty=true},
-					{id="165", coord="-164, 16, -76", empty=true},
-					{id="166", coord="-156, 16, -76", empty=true},
-					{id="167", coord="-148, 16, -76", empty=true},
-					{id="168", coord="-140, 16, -76", empty=true},
-					{id="169", coord="-132, 16, -76", empty=true},
-					{id="170", coord="-124, 16, -76", empty=true},
-					{id="171", coord="-116, 16, -76", empty=true},
-					{id="172", coord="-108, 16, -76", empty=true},
-					{id="173", coord="-100, 16, -76", empty=true},
-					{id="174", coord="-92, 16, -76", empty=true},
-					{id="175", coord="-84, 16, -76", empty=true},
-					{id="176", coord="-76, 16, -76", empty=true},
-					{id="177", coord="-68, 16, -76", empty=true},
-					{id="178", coord="-60, 16, -76", empty=true},
-					{id="179", coord="-164, 16, -84", empty=true},
-					{id="180", coord="-156, 16, -84", empty=true},
-					{id="181", coord="-148, 16, -84", empty=true},
-					{id="182", coord="-140, 16, -84", empty=true},
-					{id="183", coord="-132, 16, -84", empty=true},
-					{id="184", coord="-124, 16, -84", empty=true},
-					{id="185", coord="-116, 16, -84", empty=true},
-					{id="186", coord="-108, 16, -84", empty=true},
-					{id="187", coord="-100, 16, -84", empty=true},
-					{id="188", coord="-92, 16, -84", empty=true},
-					{id="189", coord="-84, 16, -84", empty=true},
-					{id="190", coord="-76, 16, -84", empty=true},
-					{id="191", coord="-68, 16, -84", empty=true},
-					{id="192", coord="-60, 16, -84", empty=true}
-				},
-				ocean = {}
-			},
-			Island_2 = {
-				mountain = {
-					{id="1", coord="92, 16, 4", empty=true},
-					{id="2", coord="100, 16, 4", empty=true},
-					{id="3", coord="108, 16, 4", empty=true},
-					{id="4", coord="116, 16, 4", empty=true},
-					{id="5", coord="124, 16, 4", empty=true},
-					{id="6", coord="132, 16, 4", empty=true},
-					{id="7", coord="140, 16, 4", empty=true},
-					{id="8", coord="148, 16, 4", empty=true},
-					{id="9", coord="156, 16, 4", empty=true},
-					{id="10", coord="164, 16, 4", empty=true},
-					{id="11", coord="172, 16, 4", empty=true},
-					{id="12", coord="180, 16, 4", empty=true},
-					{id="13", coord="188, 16, 4", empty=true},
-					{id="14", coord="196, 16, 4", empty=true},
-					{id="15", coord="204, 16, 4", empty=true},
-					{id="16", coord="212, 16, 4", empty=true},
-					{id="17", coord="220, 16, 4", empty=true},
-					{id="18", coord="228, 16, 4", empty=true},
-					{id="19", coord="92, 16, -4", empty=true},
-					{id="20", coord="100, 16, -4", empty=true},
-					{id="21", coord="108, 16, -4", empty=true},
-					{id="22", coord="116, 16, -4", empty=true},
-					{id="23", coord="124, 16, -4", empty=true},
-					{id="24", coord="132, 16, -4", empty=true},
-					{id="25", coord="140, 16, -4", empty=true},
-					{id="26", coord="148, 16, -4", empty=true},
-					{id="27", coord="156, 16, -4", empty=true},
-					{id="28", coord="164, 16, -4", empty=true},
-					{id="29", coord="172, 16, -4", empty=true},
-					{id="30", coord="180, 16, -4", empty=true},
-					{id="31", coord="188, 16, -4", empty=true},
-					{id="32", coord="196, 16, -4", empty=true},
-					{id="33", coord="204, 16, -4", empty=true},
-					{id="34", coord="212, 16, -4", empty=true},
-					{id="35", coord="220, 16, -4", empty=true},
-					{id="36", coord="228, 16, -4", empty=true},
-					{id="37", coord="92, 16, -12", empty=true},
-					{id="38", coord="100, 16, -12", empty=true},
-					{id="39", coord="108, 16, -12", empty=true},
-					{id="40", coord="116, 16, -12", empty=true},
-					{id="41", coord="124, 16, -12", empty=true},
-					{id="42", coord="132, 16, -12", empty=true},
-					{id="43", coord="140, 16, -12", empty=true},
-					{id="44", coord="148, 16, -12", empty=true},
-					{id="45", coord="156, 16, -12", empty=true},
-					{id="46", coord="164, 16, -12", empty=true},
-					{id="47", coord="172, 16, -12", empty=true},
-					{id="48", coord="180, 16, -12", empty=true},
-					{id="49", coord="188, 16, -12", empty=true},
-					{id="50", coord="196, 16, -12", empty=true},
-					{id="51", coord="204, 16, -12", empty=true},
-					{id="52", coord="212, 16, -12", empty=true},
-					{id="53", coord="220, 16, -12", empty=true},
-					{id="54", coord="228, 16, -12", empty=true},
-					{id="55", coord="92, 16, -20", empty=true},
-					{id="56", coord="100, 16, -20", empty=true},
-					{id="57", coord="108, 16, -20", empty=true},
-					{id="58", coord="116, 16, -20", empty=true},
-					{id="59", coord="124, 16, -20", empty=true},
-					{id="60", coord="132, 16, -20", empty=true},
-					{id="61", coord="140, 16, -20", empty=true},
-					{id="62", coord="148, 16, -20", empty=true},
-					{id="63", coord="156, 16, -20", empty=true},
-					{id="64", coord="164, 16, -20", empty=true},
-					{id="65", coord="172, 16, -20", empty=true},
-					{id="66", coord="180, 16, -20", empty=true},
-					{id="67", coord="188, 16, -20", empty=true},
-					{id="68", coord="196, 16, -20", empty=true},
-					{id="69", coord="204, 16, -20", empty=true},
-					{id="70", coord="212, 16, -20", empty=true},
-					{id="71", coord="220, 16, -20", empty=true},
-					{id="72", coord="228, 16, -20", empty=true},
-					{id="73", coord="92, 16, -28", empty=true},
-					{id="74", coord="100, 16, -28", empty=true},
-					{id="75", coord="108, 16, -28", empty=true},
-					{id="76", coord="116, 16, -28", empty=true},
-					{id="77", coord="124, 16, -28", empty=true},
-					{id="78", coord="132, 16, -28", empty=true},
-					{id="79", coord="140, 16, -28", empty=true},
-					{id="80", coord="148, 16, -28", empty=true},
-					{id="81", coord="156, 16, -28", empty=true},
-					{id="82", coord="164, 16, -28", empty=true},
-					{id="83", coord="172, 16, -28", empty=true},
-					{id="84", coord="180, 16, -28", empty=true},
-					{id="85", coord="188, 16, -28", empty=true},
-					{id="86", coord="196, 16, -28", empty=true},
-					{id="87", coord="204, 16, -28", empty=true},
-					{id="88", coord="212, 16, -28", empty=true},
-					{id="89", coord="220, 16, -28", empty=true},
-					{id="90", coord="228, 16, -28", empty=true},
-					{id="91", coord="92, 16, -36", empty=true},
-					{id="92", coord="100, 16, -36", empty=true},
-					{id="93", coord="108, 16, -36", empty=true},
-					{id="94", coord="116, 16, -36", empty=true},
-					{id="95", coord="124, 16, -36", empty=true},
-					{id="96", coord="132, 16, -36", empty=true},
-					{id="97", coord="140, 16, -36", empty=true},
-					{id="98", coord="148, 16, -36", empty=true},
-					{id="99", coord="156, 16, -36", empty=true},
-					{id="100", coord="164, 16, -36", empty=true},
-					{id="101", coord="172, 16, -36", empty=true},
-					{id="102", coord="180, 16, -36", empty=true},
-					{id="103", coord="188, 16, -36", empty=true},
-					{id="104", coord="196, 16, -36", empty=true},
-					{id="105", coord="204, 16, -36", empty=true},
-					{id="106", coord="212, 16, -36", empty=true},
-					{id="107", coord="220, 16, -36", empty=true},
-					{id="108", coord="228, 16, -36", empty=true},
-					{id="109", coord="108, 16, -44", empty=true},
-					{id="110", coord="116, 16, -44", empty=true},
-					{id="111", coord="124, 16, -44", empty=true},
-					{id="112", coord="132, 16, -44", empty=true},
-					{id="113", coord="140, 16, -44", empty=true},
-					{id="114", coord="148, 16, -44", empty=true},
-					{id="115", coord="156, 16, -44", empty=true},
-					{id="116", coord="164, 16, -44", empty=true},
-					{id="117", coord="172, 16, -44", empty=true},
-					{id="118", coord="180, 16, -44", empty=true},
-					{id="119", coord="188, 16, -44", empty=true},
-					{id="120", coord="196, 16, -44", empty=true},
-					{id="121", coord="204, 16, -44", empty=true},
-					{id="122", coord="212, 16, -44", empty=true},
-					{id="123", coord="108, 16, -52", empty=true},
-					{id="124", coord="116, 16, -52", empty=true},
-					{id="125", coord="124, 16, -52", empty=true},
-					{id="126", coord="132, 16, -52", empty=true},
-					{id="127", coord="140, 16, -52", empty=true},
-					{id="128", coord="148, 16, -52", empty=true},
-					{id="129", coord="156, 16, -52", empty=true},
-					{id="130", coord="164, 16, -52", empty=true},
-					{id="131", coord="172, 16, -52", empty=true},
-					{id="132", coord="180, 16, -52", empty=true},
-					{id="133", coord="188, 16, -52", empty=true},
-					{id="134", coord="196, 16, -52", empty=true},
-					{id="135", coord="204, 16, -52", empty=true},
-					{id="136", coord="212, 16, -52", empty=true},
-					{id="137", coord="108, 16, -60", empty=true},
-					{id="138", coord="116, 16, -60", empty=true},
-					{id="139", coord="124, 16, -60", empty=true},
-					{id="140", coord="132, 16, -60", empty=true},
-					{id="141", coord="140, 16, -60", empty=true},
-					{id="142", coord="148, 16, -60", empty=true},
-					{id="143", coord="156, 16, -60", empty=true},
-					{id="144", coord="164, 16, -60", empty=true},
-					{id="145", coord="172, 16, -60", empty=true},
-					{id="146", coord="180, 16, -60", empty=true},
-					{id="147", coord="188, 16, -60", empty=true},
-					{id="148", coord="196, 16, -60", empty=true},
-					{id="149", coord="204, 16, -60", empty=true},
-					{id="150", coord="212, 16, -60", empty=true},
-					{id="151", coord="108, 16, -68", empty=true},
-					{id="152", coord="116, 16, -68", empty=true},
-					{id="153", coord="124, 16, -68", empty=true},
-					{id="154", coord="132, 16, -68", empty=true},
-					{id="155", coord="140, 16, -68", empty=true},
-					{id="156", coord="148, 16, -68", empty=true},
-					{id="157", coord="156, 16, -68", empty=true},
-					{id="158", coord="164, 16, -68", empty=true},
-					{id="159", coord="172, 16, -68", empty=true},
-					{id="160", coord="180, 16, -68", empty=true},
-					{id="161", coord="188, 16, -68", empty=true},
-					{id="162", coord="196, 16, -68", empty=true},
-					{id="163", coord="204, 16, -68", empty=true},
-					{id="164", coord="212, 16, -68", empty=true},
-					{id="165", coord="108, 16, -76", empty=true},
-					{id="166", coord="116, 16, -76", empty=true},
-					{id="167", coord="124, 16, -76", empty=true},
-					{id="168", coord="132, 16, -76", empty=true},
-					{id="169", coord="140, 16, -76", empty=true},
-					{id="170", coord="148, 16, -76", empty=true},
-					{id="171", coord="156, 16, -76", empty=true},
-					{id="172", coord="164, 16, -76", empty=true},
-					{id="173", coord="172, 16, -76", empty=true},
-					{id="174", coord="180, 16, -76", empty=true},
-					{id="175", coord="188, 16, -76", empty=true},
-					{id="176", coord="196, 16, -76", empty=true},
-					{id="177", coord="204, 16, -76", empty=true},
-					{id="178", coord="212, 16, -76", empty=true},
-					{id="179", coord="108, 16, -84", empty=true},
-					{id="180", coord="116, 16, -84", empty=true},
-					{id="181", coord="124, 16, -84", empty=true},
-					{id="182", coord="132, 16, -84", empty=true},
-					{id="183", coord="140, 16, -84", empty=true},
-					{id="184", coord="148, 16, -84", empty=true},
-					{id="185", coord="156, 16, -84", empty=true},
-					{id="186", coord="164, 16, -84", empty=true},
-					{id="187", coord="172, 16, -84", empty=true},
-					{id="188", coord="180, 16, -84", empty=true},
-					{id="189", coord="188, 16, -84", empty=true},
-					{id="190", coord="196, 16, -84", empty=true},
-					{id="191", coord="204, 16, -84", empty=true},
-					{id="192", coord="212, 16, -84", empty=true}
-				},
-				ocean = {}
-			},
-			Island_3 = {
-				mountain = {
-					{id="1", coord="-444, 16, 4", empty=true},
-					{id="2", coord="-452, 16, 4", empty=true},
-					{id="3", coord="-460, 16, 4", empty=true},
-					{id="4", coord="-468, 16, 4", empty=true},
-					{id="5", coord="-476, 16, 4", empty=true},
-					{id="6", coord="-484, 16, 4", empty=true},
-					{id="7", coord="-492, 16, 4", empty=true},
-					{id="8", coord="-500, 16, 4", empty=true},
-					{id="9", coord="-508, 16, 4", empty=true},
-					{id="10", coord="-516, 16, 4", empty=true},
-					{id="11", coord="-524, 16, 4", empty=true},
-					{id="12", coord="-532, 16, 4", empty=true},
-					{id="13", coord="-540, 16, 4", empty=true},
-					{id="14", coord="-548, 16, 4", empty=true},
-					{id="15", coord="-556, 16, 4", empty=true},
-					{id="16", coord="-564, 16, 4", empty=true},
-					{id="17", coord="-572, 16, 4", empty=true},
-					{id="18", coord="-580, 16, 4", empty=true},
-					{id="19", coord="-444, 16, -4", empty=true},
-					{id="20", coord="-452, 16, -4", empty=true},
-					{id="21", coord="-460, 16, -4", empty=true},
-					{id="22", coord="-468, 16, -4", empty=true},
-					{id="23", coord="-476, 16, -4", empty=true},
-					{id="24", coord="-484, 16, -4", empty=true},
-					{id="25", coord="-492, 16, -4", empty=true},
-					{id="26", coord="-500, 16, -4", empty=true},
-					{id="27", coord="-508, 16, -4", empty=true},
-					{id="28", coord="-516, 16, -4", empty=true},
-					{id="29", coord="-524, 16, -4", empty=true},
-					{id="30", coord="-532, 16, -4", empty=true},
-					{id="31", coord="-540, 16, -4", empty=true},
-					{id="32", coord="-548, 16, -4", empty=true},
-					{id="33", coord="-556, 16, -4", empty=true},
-					{id="34", coord="-564, 16, -4", empty=true},
-					{id="35", coord="-572, 16, -4", empty=true},
-					{id="36", coord="-580, 16, -4", empty=true},
-					{id="37", coord="-444, 16, -12", empty=true},
-					{id="38", coord="-452, 16, -12", empty=true},
-					{id="39", coord="-460, 16, -12", empty=true},
-					{id="40", coord="-468, 16, -12", empty=true},
-					{id="41", coord="-476, 16, -12", empty=true},
-					{id="42", coord="-484, 16, -12", empty=true},
-					{id="43", coord="-492, 16, -12", empty=true},
-					{id="44", coord="-500, 16, -12", empty=true},
-					{id="45", coord="-508, 16, -12", empty=true},
-					{id="46", coord="-516, 16, -12", empty=true},
-					{id="47", coord="-524, 16, -12", empty=true},
-					{id="48", coord="-532, 16, -12", empty=true},
-					{id="49", coord="-540, 16, -12", empty=true},
-					{id="50", coord="-548, 16, -12", empty=true},
-					{id="51", coord="-556, 16, -12", empty=true},
-					{id="52", coord="-564, 16, -12", empty=true},
-					{id="53", coord="-572, 16, -12", empty=true},
-					{id="54", coord="-580, 16, -12", empty=true},
-					{id="55", coord="-444, 16, -20", empty=true},
-					{id="56", coord="-452, 16, -20", empty=true},
-					{id="57", coord="-460, 16, -20", empty=true},
-					{id="58", coord="-468, 16, -20", empty=true},
-					{id="59", coord="-476, 16, -20", empty=true},
-					{id="60", coord="-484, 16, -20", empty=true},
-					{id="61", coord="-492, 16, -20", empty=true},
-					{id="62", coord="-500, 16, -20", empty=true},
-					{id="63", coord="-508, 16, -20", empty=true},
-					{id="64", coord="-516, 16, -20", empty=true},
-					{id="65", coord="-524, 16, -20", empty=true},
-					{id="66", coord="-532, 16, -20", empty=true},
-					{id="67", coord="-540, 16, -20", empty=true},
-					{id="68", coord="-548, 16, -20", empty=true},
-					{id="69", coord="-556, 16, -20", empty=true},
-					{id="70", coord="-564, 16, -20", empty=true},
-					{id="71", coord="-572, 16, -20", empty=true},
-					{id="72", coord="-580, 16, -20", empty=true},
-					{id="73", coord="-444, 16, -28", empty=true},
-					{id="74", coord="-452, 16, -28", empty=true},
-					{id="75", coord="-460, 16, -28", empty=true},
-					{id="76", coord="-468, 16, -28", empty=true},
-					{id="77", coord="-476, 16, -28", empty=true},
-					{id="78", coord="-484, 16, -28", empty=true},
-					{id="79", coord="-492, 16, -28", empty=true},
-					{id="80", coord="-500, 16, -28", empty=true},
-					{id="81", coord="-508, 16, -28", empty=true},
-					{id="82", coord="-516, 16, -28", empty=true},
-					{id="83", coord="-524, 16, -28", empty=true},
-					{id="84", coord="-532, 16, -28", empty=true},
-					{id="85", coord="-540, 16, -28", empty=true},
-					{id="86", coord="-548, 16, -28", empty=true},
-					{id="87", coord="-556, 16, -28", empty=true},
-					{id="88", coord="-564, 16, -28", empty=true},
-					{id="89", coord="-572, 16, -28", empty=true},
-					{id="90", coord="-580, 16, -28", empty=true},
-					{id="91", coord="-444, 16, -36", empty=true},
-					{id="92", coord="-452, 16, -36", empty=true},
-					{id="93", coord="-460, 16, -36", empty=true},
-					{id="94", coord="-468, 16, -36", empty=true},
-					{id="95", coord="-476, 16, -36", empty=true},
-					{id="96", coord="-484, 16, -36", empty=true},
-					{id="97", coord="-492, 16, -36", empty=true},
-					{id="98", coord="-500, 16, -36", empty=true},
-					{id="99", coord="-508, 16, -36", empty=true},
-					{id="100", coord="-516, 16, -36", empty=true},
-					{id="101", coord="-524, 16, -36", empty=true},
-					{id="102", coord="-532, 16, -36", empty=true},
-					{id="103", coord="-540, 16, -36", empty=true},
-					{id="104", coord="-548, 16, -36", empty=true},
-					{id="105", coord="-556, 16, -36", empty=true},
-					{id="106", coord="-564, 16, -36", empty=true},
-					{id="107", coord="-572, 16, -36", empty=true},
-					{id="108", coord="-580, 16, -36", empty=true},
-					{id="109", coord="-428, 16, -44", empty=true},
-					{id="110", coord="-420, 16, -44", empty=true},
-					{id="111", coord="-412, 16, -44", empty=true},
-					{id="112", coord="-404, 16, -44", empty=true},
-					{id="113", coord="-396, 16, -44", empty=true},
-					{id="114", coord="-388, 16, -44", empty=true},
-					{id="115", coord="-380, 16, -44", empty=true},
-					{id="116", coord="-372, 16, -44", empty=true},
-					{id="117", coord="-364, 16, -44", empty=true},
-					{id="118", coord="-356, 16, -44", empty=true},
-					{id="119", coord="-348, 16, -44", empty=true},
-					{id="120", coord="-340, 16, -44", empty=true},
-					{id="121", coord="-332, 16, -44", empty=true},
-					{id="122", coord="-324, 16, -44", empty=true},
-					{id="123", coord="-428, 16, -52", empty=true},
-					{id="124", coord="-420, 16, -52", empty=true},
-					{id="125", coord="-412, 16, -52", empty=true},
-					{id="126", coord="-404, 16, -52", empty=true},
-					{id="127", coord="-396, 16, -52", empty=true},
-					{id="128", coord="-388, 16, -52", empty=true},
-					{id="129", coord="-380, 16, -52", empty=true},
-					{id="130", coord="-372, 16, -52", empty=true},
-					{id="131", coord="-364, 16, -52", empty=true},
-					{id="132", coord="-356, 16, -52", empty=true},
-					{id="133", coord="-348, 16, -52", empty=true},
-					{id="134", coord="-340, 16, -52", empty=true},
-					{id="135", coord="-332, 16, -52", empty=true},
-					{id="136", coord="-324, 16, -52", empty=true},
-					{id="137", coord="-428, 16, -60", empty=true},
-					{id="138", coord="-420, 16, -60", empty=true},
-					{id="139", coord="-412, 16, -60", empty=true},
-					{id="140", coord="-404, 16, -60", empty=true},
-					{id="141", coord="-396, 16, -60", empty=true},
-					{id="142", coord="-388, 16, -60", empty=true},
-					{id="143", coord="-380, 16, -60", empty=true},
-					{id="144", coord="-372, 16, -60", empty=true},
-					{id="145", coord="-364, 16, -60", empty=true},
-					{id="146", coord="-356, 16, -60", empty=true},
-					{id="147", coord="-348, 16, -60", empty=true},
-					{id="148", coord="-340, 16, -60", empty=true},
-					{id="149", coord="-332, 16, -60", empty=true},
-					{id="150", coord="-324, 16, -60", empty=true},
-					{id="151", coord="-428, 16, -68", empty=true},
-					{id="152", coord="-420, 16, -68", empty=true},
-					{id="153", coord="-412, 16, -68", empty=true},
-					{id="154", coord="-404, 16, -68", empty=true},
-					{id="155", coord="-396, 16, -68", empty=true},
-					{id="156", coord="-388, 16, -68", empty=true},
-					{id="157", coord="-380, 16, -68", empty=true},
-					{id="158", coord="-372, 16, -68", empty=true},
-					{id="159", coord="-364, 16, -68", empty=true},
-					{id="160", coord="-356, 16, -68", empty=true},
-					{id="161", coord="-348, 16, -68", empty=true},
-					{id="162", coord="-340, 16, -68", empty=true},
-					{id="163", coord="-332, 16, -68", empty=true},
-					{id="164", coord="-324, 16, -68", empty=true},
-					{id="165", coord="-428, 16, -76", empty=true},
-					{id="166", coord="-420, 16, -76", empty=true},
-					{id="167", coord="-412, 16, -76", empty=true},
-					{id="168", coord="-404, 16, -76", empty=true},
-					{id="169", coord="-396, 16, -76", empty=true},
-					{id="170", coord="-388, 16, -76", empty=true},
-					{id="171", coord="-380, 16, -76", empty=true},
-					{id="172", coord="-372, 16, -76", empty=true},
-					{id="173", coord="-364, 16, -76", empty=true},
-					{id="174", coord="-356, 16, -76", empty=true},
-					{id="175", coord="-348, 16, -76", empty=true},
-					{id="176", coord="-340, 16, -76", empty=true},
-					{id="177", coord="-332, 16, -76", empty=true},
-					{id="178", coord="-324, 16, -76", empty=true},
-					{id="179", coord="-428, 16, -84", empty=true},
-					{id="180", coord="-420, 16, -84", empty=true},
-					{id="181", coord="-412, 16, -84", empty=true},
-					{id="182", coord="-404, 16, -84", empty=true},
-					{id="183", coord="-396, 16, -84", empty=true},
-					{id="184", coord="-388, 16, -84", empty=true},
-					{id="185", coord="-380, 16, -84", empty=true},
-					{id="186", coord="-372, 16, -84", empty=true},
-					{id="187", coord="-364, 16, -84", empty=true},
-					{id="188", coord="-356, 16, -84", empty=true},
-					{id="189", coord="-348, 16, -84", empty=true},
-					{id="190", coord="-340, 16, -84", empty=true},
-					{id="191", coord="-332, 16, -84", empty=true},
-					{id="192", coord="-324, 16, -84", empty=true}
-				},
-				ocean = {}
-			},
-			Island_4 = {
-				mountain = {
-					{id="1", coord="-308, 16, 204", empty=true},
-					{id="2", coord="-316, 16, 204", empty=true},
-					{id="3", coord="-324, 16, 204", empty=true},
-					{id="4", coord="-332, 16, 204", empty=true},
-					{id="5", coord="-340, 16, 204", empty=true},
-					{id="6", coord="-348, 16, 204", empty=true},
-					{id="7", coord="-356, 16, 204", empty=true},
-					{id="8", coord="-364, 16, 204", empty=true},
-					{id="9", coord="-372, 16, 204", empty=true},
-					{id="10", coord="-380, 16, 204", empty=true},
-					{id="11", coord="-388, 16, 204", empty=true},
-					{id="12", coord="-396, 16, 204", empty=true},
-					{id="13", coord="-404, 16, 204", empty=true},
-					{id="14", coord="-412, 16, 204", empty=true},
-					{id="15", coord="-420, 16, 204", empty=true},
-					{id="16", coord="-428, 16, 204", empty=true},
-					{id="17", coord="-436, 16, 204", empty=true},
-					{id="18", coord="-444, 16, 204", empty=true},
-					{id="19", coord="-308, 16, 212", empty=true},
-					{id="20", coord="-316, 16, 212", empty=true},
-					{id="21", coord="-324, 16, 212", empty=true},
-					{id="22", coord="-332, 16, 212", empty=true},
-					{id="23", coord="-340, 16, 212", empty=true},
-					{id="24", coord="-348, 16, 212", empty=true},
-					{id="25", coord="-356, 16, 212", empty=true},
-					{id="26", coord="-364, 16, 212", empty=true},
-					{id="27", coord="-372, 16, 212", empty=true},
-					{id="28", coord="-380, 16, 212", empty=true},
-					{id="29", coord="-388, 16, 212", empty=true},
-					{id="30", coord="-396, 16, 212", empty=true},
-					{id="31", coord="-404, 16, 212", empty=true},
-					{id="32", coord="-412, 16, 212", empty=true},
-					{id="33", coord="-420, 16, 212", empty=true},
-					{id="34", coord="-428, 16, 212", empty=true},
-					{id="35", coord="-436, 16, 212", empty=true},
-					{id="36", coord="-444, 16, 212", empty=true},
-					{id="37", coord="-308, 16, 220", empty=true},
-					{id="38", coord="-316, 16, 220", empty=true},
-					{id="39", coord="-324, 16, 220", empty=true},
-					{id="40", coord="-332, 16, 220", empty=true},
-					{id="41", coord="-340, 16, 220", empty=true},
-					{id="42", coord="-348, 16, 220", empty=true},
-					{id="43", coord="-356, 16, 220", empty=true},
-					{id="44", coord="-364, 16, 220", empty=true},
-					{id="45", coord="-372, 16, 220", empty=true},
-					{id="46", coord="-380, 16, 220", empty=true},
-					{id="47", coord="-388, 16, 220", empty=true},
-					{id="48", coord="-396, 16, 220", empty=true},
-					{id="49", coord="-404, 16, 220", empty=true},
-					{id="50", coord="-412, 16, 220", empty=true},
-					{id="51", coord="-420, 16, 220", empty=true},
-					{id="52", coord="-428, 16, 220", empty=true},
-					{id="53", coord="-436, 16, 220", empty=true},
-					{id="54", coord="-444, 16, 220", empty=true},
-					{id="55", coord="-308, 16, 228", empty=true},
-					{id="56", coord="-316, 16, 228", empty=true},
-					{id="57", coord="-324, 16, 228", empty=true},
-					{id="58", coord="-332, 16, 228", empty=true},
-					{id="59", coord="-340, 16, 228", empty=true},
-					{id="60", coord="-348, 16, 228", empty=true},
-					{id="61", coord="-356, 16, 228", empty=true},
-					{id="62", coord="-364, 16, 228", empty=true},
-					{id="63", coord="-372, 16, 228", empty=true},
-					{id="64", coord="-380, 16, 228", empty=true},
-					{id="65", coord="-388, 16, 228", empty=true},
-					{id="66", coord="-396, 16, 228", empty=true},
-					{id="67", coord="-404, 16, 228", empty=true},
-					{id="68", coord="-412, 16, 228", empty=true},
-					{id="69", coord="-420, 16, 228", empty=true},
-					{id="70", coord="-428, 16, 228", empty=true},
-					{id="71", coord="-436, 16, 228", empty=true},
-					{id="72", coord="-444, 16, 228", empty=true},
-					{id="73", coord="-308, 16, 236", empty=true},
-					{id="74", coord="-316, 16, 236", empty=true},
-					{id="75", coord="-324, 16, 236", empty=true},
-					{id="76", coord="-332, 16, 236", empty=true},
-					{id="77", coord="-340, 16, 236", empty=true},
-					{id="78", coord="-348, 16, 236", empty=true},
-					{id="79", coord="-356, 16, 236", empty=true},
-					{id="80", coord="-364, 16, 236", empty=true},
-					{id="81", coord="-372, 16, 236", empty=true},
-					{id="82", coord="-380, 16, 236", empty=true},
-					{id="83", coord="-388, 16, 236", empty=true},
-					{id="84", coord="-396, 16, 236", empty=true},
-					{id="85", coord="-404, 16, 236", empty=true},
-					{id="86", coord="-412, 16, 236", empty=true},
-					{id="87", coord="-420, 16, 236", empty=true},
-					{id="88", coord="-428, 16, 236", empty=true},
-					{id="89", coord="-436, 16, 236", empty=true},
-					{id="90", coord="-444, 16, 236", empty=true},
-					{id="91", coord="-308, 16, 244", empty=true},
-					{id="92", coord="-316, 16, 244", empty=true},
-					{id="93", coord="-324, 16, 244", empty=true},
-					{id="94", coord="-332, 16, 244", empty=true},
-					{id="95", coord="-340, 16, 244", empty=true},
-					{id="96", coord="-348, 16, 244", empty=true},
-					{id="97", coord="-356, 16, 244", empty=true},
-					{id="98", coord="-364, 16, 244", empty=true},
-					{id="99", coord="-372, 16, 244", empty=true},
-					{id="100", coord="-380, 16, 244", empty=true},
-					{id="101", coord="-388, 16, 244", empty=true},
-					{id="102", coord="-396, 16, 244", empty=true},
-					{id="103", coord="-404, 16, 244", empty=true},
-					{id="104", coord="-412, 16, 244", empty=true},
-					{id="105", coord="-420, 16, 244", empty=true},
-					{id="106", coord="-428, 16, 244", empty=true},
-					{id="107", coord="-436, 16, 244", empty=true},
-					{id="108", coord="-444, 16, 244", empty=true},
-					{id="109", coord="-324, 16, 252", empty=true},
-					{id="110", coord="-332, 16, 252", empty=true},
-					{id="111", coord="-340, 16, 252", empty=true},
-					{id="112", coord="-348, 16, 252", empty=true},
-					{id="113", coord="-356, 16, 252", empty=true},
-					{id="114", coord="-364, 16, 252", empty=true},
-					{id="115", coord="-372, 16, 252", empty=true},
-					{id="116", coord="-380, 16, 252", empty=true},
-					{id="117", coord="-388, 16, 252", empty=true},
-					{id="118", coord="-396, 16, 252", empty=true},
-					{id="119", coord="-404, 16, 252", empty=true},
-					{id="120", coord="-412, 16, 252", empty=true},
-					{id="121", coord="-420, 16, 252", empty=true},
-					{id="122", coord="-428, 16, 252", empty=true},
-					{id="123", coord="-324, 16, 260", empty=true},
-					{id="124", coord="-332, 16, 260", empty=true},
-					{id="125", coord="-340, 16, 260", empty=true},
-					{id="126", coord="-348, 16, 260", empty=true},
-					{id="127", coord="-356, 16, 260", empty=true},
-					{id="128", coord="-364, 16, 260", empty=true},
-					{id="129", coord="-372, 16, 260", empty=true},
-					{id="130", coord="-380, 16, 260", empty=true},
-					{id="131", coord="-388, 16, 260", empty=true},
-					{id="132", coord="-396, 16, 260", empty=true},
-					{id="133", coord="-404, 16, 260", empty=true},
-					{id="134", coord="-412, 16, 260", empty=true},
-					{id="135", coord="-420, 16, 260", empty=true},
-					{id="136", coord="-428, 16, 260", empty=true},
-					{id="137", coord="-324, 16, 268", empty=true},
-					{id="138", coord="-332, 16, 268", empty=true},
-					{id="139", coord="-340, 16, 268", empty=true},
-					{id="140", coord="-348, 16, 268", empty=true},
-					{id="141", coord="-356, 16, 268", empty=true},
-					{id="142", coord="-364, 16, 268", empty=true},
-					{id="143", coord="-372, 16, 268", empty=true},
-					{id="144", coord="-380, 16, 268", empty=true},
-					{id="145", coord="-388, 16, 268", empty=true},
-					{id="146", coord="-396, 16, 268", empty=true},
-					{id="147", coord="-404, 16, 268", empty=true},
-					{id="148", coord="-412, 16, 268", empty=true},
-					{id="149", coord="-420, 16, 268", empty=true},
-					{id="150", coord="-428, 16, 268", empty=true},
-					{id="151", coord="-324, 16, 276", empty=true},
-					{id="152", coord="-332, 16, 276", empty=true},
-					{id="153", coord="-340, 16, 276", empty=true},
-					{id="154", coord="-348, 16, 276", empty=true},
-					{id="155", coord="-356, 16, 276", empty=true},
-					{id="156", coord="-364, 16, 276", empty=true},
-					{id="157", coord="-372, 16, 276", empty=true},
-					{id="158", coord="-380, 16, 276", empty=true},
-					{id="159", coord="-388, 16, 276", empty=true},
-					{id="160", coord="-396, 16, 276", empty=true},
-					{id="161", coord="-404, 16, 276", empty=true},
-					{id="162", coord="-412, 16, 276", empty=true},
-					{id="163", coord="-420, 16, 276", empty=true},
-					{id="164", coord="-428, 16, 276", empty=true},
-					{id="165", coord="-324, 16, 284", empty=true},
-					{id="166", coord="-332, 16, 284", empty=true},
-					{id="167", coord="-340, 16, 284", empty=true},
-					{id="168", coord="-348, 16, 284", empty=true},
-					{id="169", coord="-356, 16, 284", empty=true},
-					{id="170", coord="-364, 16, 284", empty=true},
-					{id="171", coord="-372, 16, 284", empty=true},
-					{id="172", coord="-380, 16, 284", empty=true},
-					{id="173", coord="-388, 16, 284", empty=true},
-					{id="174", coord="-396, 16, 284", empty=true},
-					{id="175", coord="-404, 16, 284", empty=true},
-					{id="176", coord="-412, 16, 284", empty=true},
-					{id="177", coord="-420, 16, 284", empty=true},
-					{id="178", coord="-428, 16, 284", empty=true},
-					{id="179", coord="-324, 16, 292", empty=true},
-					{id="180", coord="-332, 16, 292", empty=true},
-					{id="181", coord="-340, 16, 292", empty=true},
-					{id="182", coord="-348, 16, 292", empty=true},
-					{id="183", coord="-356, 16, 292", empty=true},
-					{id="184", coord="-364, 16, 292", empty=true},
-					{id="185", coord="-372, 16, 292", empty=true},
-					{id="186", coord="-380, 16, 292", empty=true},
-					{id="187", coord="-388, 16, 292", empty=true},
-					{id="188", coord="-396, 16, 292", empty=true},
-					{id="189", coord="-404, 16, 292", empty=true},
-					{id="190", coord="-412, 16, 292", empty=true},
-					{id="191", coord="-420, 16, 292", empty=true},
-					{id="192", coord="-428, 16, 292", empty=true}
-				},
-				ocean = {}
-			},
-			Island_5 = {
-				mountain = {
-					{id="1", coord="-44, 16, 204", empty=true},
-					{id="2", coord="-52, 16, 204", empty=true},
-					{id="3", coord="-60, 16, 204", empty=true},
-					{id="4", coord="-68, 16, 204", empty=true},
-					{id="5", coord="-76, 16, 204", empty=true},
-					{id="6", coord="-84, 16, 204", empty=true},
-					{id="7", coord="-92, 16, 204", empty=true},
-					{id="8", coord="-100, 16, 204", empty=true},
-					{id="9", coord="-108, 16, 204", empty=true},
-					{id="10", coord="-116, 16, 204", empty=true},
-					{id="11", coord="-124, 16, 204", empty=true},
-					{id="12", coord="-132, 16, 204", empty=true},
-					{id="13", coord="-140, 16, 204", empty=true},
-					{id="14", coord="-148, 16, 204", empty=true},
-					{id="15", coord="-156, 16, 204", empty=true},
-					{id="16", coord="-164, 16, 204", empty=true},
-					{id="17", coord="-172, 16, 204", empty=true},
-					{id="18", coord="-180, 16, 204", empty=true},
-					{id="19", coord="-44, 16, 212", empty=true},
-					{id="20", coord="-52, 16, 212", empty=true},
-					{id="21", coord="-60, 16, 212", empty=true},
-					{id="22", coord="-68, 16, 212", empty=true},
-					{id="23", coord="-76, 16, 212", empty=true},
-					{id="24", coord="-84, 16, 212", empty=true},
-					{id="25", coord="-92, 16, 212", empty=true},
-					{id="26", coord="-100, 16, 212", empty=true},
-					{id="27", coord="-108, 16, 212", empty=true},
-					{id="28", coord="-116, 16, 212", empty=true},
-					{id="29", coord="-124, 16, 212", empty=true},
-					{id="30", coord="-132, 16, 212", empty=true},
-					{id="31", coord="-140, 16, 212", empty=true},
-					{id="32", coord="-148, 16, 212", empty=true},
-					{id="33", coord="-156, 16, 212", empty=true},
-					{id="34", coord="-164, 16, 212", empty=true},
-					{id="35", coord="-172, 16, 212", empty=true},
-					{id="36", coord="-180, 16, 212", empty=true},
-					{id="37", coord="-44, 16, 220", empty=true},
-					{id="38", coord="-52, 16, 220", empty=true},
-					{id="39", coord="-60, 16, 220", empty=true},
-					{id="40", coord="-68, 16, 220", empty=true},
-					{id="41", coord="-76, 16, 220", empty=true},
-					{id="42", coord="-84, 16, 220", empty=true},
-					{id="43", coord="-92, 16, 220", empty=true},
-					{id="44", coord="-100, 16, 220", empty=true},
-					{id="45", coord="-108, 16, 220", empty=true},
-					{id="46", coord="-116, 16, 220", empty=true},
-					{id="47", coord="-124, 16, 220", empty=true},
-					{id="48", coord="-132, 16, 220", empty=true},
-					{id="49", coord="-140, 16, 220", empty=true},
-					{id="50", coord="-148, 16, 220", empty=true},
-					{id="51", coord="-156, 16, 220", empty=true},
-					{id="52", coord="-164, 16, 220", empty=true},
-					{id="53", coord="-172, 16, 220", empty=true},
-					{id="54", coord="-180, 16, 220", empty=true},
-					{id="55", coord="-44, 16, 228", empty=true},
-					{id="56", coord="-52, 16, 228", empty=true},
-					{id="57", coord="-60, 16, 228", empty=true},
-					{id="58", coord="-68, 16, 228", empty=true},
-					{id="59", coord="-76, 16, 228", empty=true},
-					{id="60", coord="-84, 16, 228", empty=true},
-					{id="61", coord="-92, 16, 228", empty=true},
-					{id="62", coord="-100, 16, 228", empty=true},
-					{id="63", coord="-108, 16, 228", empty=true},
-					{id="64", coord="-116, 16, 228", empty=true},
-					{id="65", coord="-124, 16, 228", empty=true},
-					{id="66", coord="-132, 16, 228", empty=true},
-					{id="67", coord="-140, 16, 228", empty=true},
-					{id="68", coord="-148, 16, 228", empty=true},
-					{id="69", coord="-156, 16, 228", empty=true},
-					{id="70", coord="-164, 16, 228", empty=true},
-					{id="71", coord="-172, 16, 228", empty=true},
-					{id="72", coord="-180, 16, 228", empty=true},
-					{id="73", coord="-44, 16, 236", empty=true},
-					{id="74", coord="-52, 16, 236", empty=true},
-					{id="75", coord="-60, 16, 236", empty=true},
-					{id="76", coord="-68, 16, 236", empty=true},
-					{id="77", coord="-76, 16, 236", empty=true},
-					{id="78", coord="-84, 16, 236", empty=true},
-					{id="79", coord="-92, 16, 236", empty=true},
-					{id="80", coord="-100, 16, 236", empty=true},
-					{id="81", coord="-108, 16, 236", empty=true},
-					{id="82", coord="-116, 16, 236", empty=true},
-					{id="83", coord="-124, 16, 236", empty=true},
-					{id="84", coord="-132, 16, 236", empty=true},
-					{id="85", coord="-140, 16, 236", empty=true},
-					{id="86", coord="-148, 16, 236", empty=true},
-					{id="87", coord="-156, 16, 236", empty=true},
-					{id="88", coord="-164, 16, 236", empty=true},
-					{id="89", coord="-172, 16, 236", empty=true},
-					{id="90", coord="-180, 16, 236", empty=true},
-					{id="91", coord="-44, 16, 244", empty=true},
-					{id="92", coord="-52, 16, 244", empty=true},
-					{id="93", coord="-60, 16, 244", empty=true},
-					{id="94", coord="-68, 16, 244", empty=true},
-					{id="95", coord="-76, 16, 244", empty=true},
-					{id="96", coord="-84, 16, 244", empty=true},
-					{id="97", coord="-92, 16, 244", empty=true},
-					{id="98", coord="-100, 16, 244", empty=true},
-					{id="99", coord="-108, 16, 244", empty=true},
-					{id="100", coord="-116, 16, 244", empty=true},
-					{id="101", coord="-124, 16, 244", empty=true},
-					{id="102", coord="-132, 16, 244", empty=true},
-					{id="103", coord="-140, 16, 244", empty=true},
-					{id="104", coord="-148, 16, 244", empty=true},
-					{id="105", coord="-156, 16, 244", empty=true},
-					{id="106", coord="-164, 16, 244", empty=true},
-					{id="107", coord="-172, 16, 244", empty=true},
-					{id="108", coord="-180, 16, 244", empty=true},
-					{id="109", coord="-60, 16, 252", empty=true},
-					{id="110", coord="-68, 16, 252", empty=true},
-					{id="111", coord="-76, 16, 252", empty=true},
-					{id="112", coord="-84, 16, 252", empty=true},
-					{id="113", coord="-92, 16, 252", empty=true},
-					{id="114", coord="-100, 16, 252", empty=true},
-					{id="115", coord="-108, 16, 252", empty=true},
-					{id="116", coord="-116, 16, 252", empty=true},
-					{id="117", coord="-124, 16, 252", empty=true},
-					{id="118", coord="-132, 16, 252", empty=true},
-					{id="119", coord="-140, 16, 252", empty=true},
-					{id="120", coord="-148, 16, 252", empty=true},
-					{id="121", coord="-156, 16, 252", empty=true},
-					{id="122", coord="-164, 16, 252", empty=true},
-					{id="123", coord="-60, 16, 260", empty=true},
-					{id="124", coord="-68, 16, 260", empty=true},
-					{id="125", coord="-76, 16, 260", empty=true},
-					{id="126", coord="-84, 16, 260", empty=true},
-					{id="127", coord="-92, 16, 260", empty=true},
-					{id="128", coord="-100, 16, 260", empty=true},
-					{id="129", coord="-108, 16, 260", empty=true},
-					{id="130", coord="-116, 16, 260", empty=true},
-					{id="131", coord="-124, 16, 260", empty=true},
-					{id="132", coord="-132, 16, 260", empty=true},
-					{id="133", coord="-140, 16, 260", empty=true},
-					{id="134", coord="-148, 16, 260", empty=true},
-					{id="135", coord="-156, 16, 260", empty=true},
-					{id="136", coord="-164, 16, 260", empty=true},
-					{id="137", coord="-60, 16, 268", empty=true},
-					{id="138", coord="-68, 16, 268", empty=true},
-					{id="139", coord="-76, 16, 268", empty=true},
-					{id="140", coord="-84, 16, 268", empty=true},
-					{id="141", coord="-92, 16, 268", empty=true},
-					{id="142", coord="-100, 16, 268", empty=true},
-					{id="143", coord="-108, 16, 268", empty=true},
-					{id="144", coord="-116, 16, 268", empty=true},
-					{id="145", coord="-124, 16, 268", empty=true},
-					{id="146", coord="-132, 16, 268", empty=true},
-					{id="147", coord="-140, 16, 268", empty=true},
-					{id="148", coord="-148, 16, 268", empty=true},
-					{id="149", coord="-156, 16, 268", empty=true},
-					{id="150", coord="-164, 16, 268", empty=true},
-					{id="151", coord="-60, 16, 276", empty=true},
-					{id="152", coord="-68, 16, 276", empty=true},
-					{id="153", coord="-76, 16, 276", empty=true},
-					{id="154", coord="-84, 16, 276", empty=true},
-					{id="155", coord="-92, 16, 276", empty=true},
-					{id="156", coord="-100, 16, 276", empty=true},
-					{id="157", coord="-108, 16, 276", empty=true},
-					{id="158", coord="-116, 16, 276", empty=true},
-					{id="159", coord="-124, 16, 276", empty=true},
-					{id="160", coord="-132, 16, 276", empty=true},
-					{id="161", coord="-140, 16, 276", empty=true},
-					{id="162", coord="-148, 16, 276", empty=true},
-					{id="163", coord="-156, 16, 276", empty=true},
-					{id="164", coord="-164, 16, 276", empty=true},
-					{id="165", coord="-60, 16, 284", empty=true},
-					{id="166", coord="-68, 16, 284", empty=true},
-					{id="167", coord="-76, 16, 284", empty=true},
-					{id="168", coord="-84, 16, 284", empty=true},
-					{id="169", coord="-92, 16, 284", empty=true},
-					{id="170", coord="-100, 16, 284", empty=true},
-					{id="171", coord="-108, 16, 284", empty=true},
-					{id="172", coord="-116, 16, 284", empty=true},
-					{id="173", coord="-124, 16, 284", empty=true},
-					{id="174", coord="-132, 16, 284", empty=true},
-					{id="175", coord="-140, 16, 284", empty=true},
-					{id="176", coord="-148, 16, 284", empty=true},
-					{id="177", coord="-156, 16, 284", empty=true},
-					{id="178", coord="-164, 16, 284", empty=true},
-					{id="179", coord="-60, 16, 292", empty=true},
-					{id="180", coord="-68, 16, 292", empty=true},
-					{id="181", coord="-76, 16, 292", empty=true},
-					{id="182", coord="-84, 16, 292", empty=true},
-					{id="183", coord="-92, 16, 292", empty=true},
-					{id="184", coord="-100, 16, 292", empty=true},
-					{id="185", coord="-108, 16, 292", empty=true},
-					{id="186", coord="-116, 16, 292", empty=true},
-					{id="187", coord="-124, 16, 292", empty=true},
-					{id="188", coord="-132, 16, 292", empty=true},
-					{id="189", coord="-140, 16, 292", empty=true},
-					{id="190", coord="-148, 16, 292", empty=true},
-					{id="191", coord="-156, 16, 292", empty=true},
-					{id="192", coord="-164, 16, 292", empty=true}
-				},
-				ocean = {}
-			},
-			Island_6 = {
-				mountain = {
-					{id="1", coord="228, 16, 204", empty=true},
-					{id="2", coord="220, 16, 204", empty=true},
-					{id="3", coord="212, 16, 204", empty=true},
-					{id="4", coord="204, 16, 204", empty=true},
-					{id="5", coord="196, 16, 204", empty=true},
-					{id="6", coord="188, 16, 204", empty=true},
-					{id="7", coord="180, 16, 204", empty=true},
-					{id="8", coord="172, 16, 204", empty=true},
-					{id="9", coord="164, 16, 204", empty=true},
-					{id="10", coord="156, 16, 204", empty=true},
-					{id="11", coord="148, 16, 204", empty=true},
-					{id="12", coord="140, 16, 204", empty=true},
-					{id="13", coord="132, 16, 204", empty=true},
-					{id="14", coord="124, 16, 204", empty=true},
-					{id="15", coord="116, 16, 204", empty=true},
-					{id="16", coord="108, 16, 204", empty=true},
-					{id="17", coord="100, 16, 204", empty=true},
-					{id="18", coord="92, 16, 204", empty=true},
-					{id="19", coord="228, 16, 212", empty=true},
-					{id="20", coord="220, 16, 212", empty=true},
-					{id="21", coord="212, 16, 212", empty=true},
-					{id="22", coord="204, 16, 212", empty=true},
-					{id="23", coord="196, 16, 212", empty=true},
-					{id="24", coord="188, 16, 212", empty=true},
-					{id="25", coord="180, 16, 212", empty=true},
-					{id="26", coord="172, 16, 212", empty=true},
-					{id="27", coord="164, 16, 212", empty=true},
-					{id="28", coord="156, 16, 212", empty=true},
-					{id="29", coord="148, 16, 212", empty=true},
-					{id="30", coord="140, 16, 212", empty=true},
-					{id="31", coord="132, 16, 212", empty=true},
-					{id="32", coord="124, 16, 212", empty=true},
-					{id="33", coord="116, 16, 212", empty=true},
-					{id="34", coord="108, 16, 212", empty=true},
-					{id="35", coord="100, 16, 212", empty=true},
-					{id="36", coord="92, 16, 212", empty=true},
-					{id="37", coord="228, 16, 220", empty=true},
-					{id="38", coord="220, 16, 220", empty=true},
-					{id="39", coord="212, 16, 220", empty=true},
-					{id="40", coord="204, 16, 220", empty=true},
-					{id="41", coord="196, 16, 220", empty=true},
-					{id="42", coord="188, 16, 220", empty=true},
-					{id="43", coord="180, 16, 220", empty=true},
-					{id="44", coord="172, 16, 220", empty=true},
-					{id="45", coord="164, 16, 220", empty=true},
-					{id="46", coord="156, 16, 220", empty=true},
-					{id="47", coord="148, 16, 220", empty=true},
-					{id="48", coord="140, 16, 220", empty=true},
-					{id="49", coord="132, 16, 220", empty=true},
-					{id="50", coord="124, 16, 220", empty=true},
-					{id="51", coord="116, 16, 220", empty=true},
-					{id="52", coord="108, 16, 220", empty=true},
-					{id="53", coord="100, 16, 220", empty=true},
-					{id="54", coord="92, 16, 220", empty=true},
-					{id="55", coord="228, 16, 228", empty=true},
-					{id="56", coord="220, 16, 228", empty=true},
-					{id="57", coord="212, 16, 228", empty=true},
-					{id="58", coord="204, 16, 228", empty=true},
-					{id="59", coord="196, 16, 228", empty=true},
-					{id="60", coord="188, 16, 228", empty=true},
-					{id="61", coord="180, 16, 228", empty=true},
-					{id="62", coord="172, 16, 228", empty=true},
-					{id="63", coord="164, 16, 228", empty=true},
-					{id="64", coord="156, 16, 228", empty=true},
-					{id="65", coord="148, 16, 228", empty=true},
-					{id="66", coord="140, 16, 228", empty=true},
-					{id="67", coord="132, 16, 228", empty=true},
-					{id="68", coord="124, 16, 228", empty=true},
-					{id="69", coord="116, 16, 228", empty=true},
-					{id="70", coord="108, 16, 228", empty=true},
-					{id="71", coord="100, 16, 228", empty=true},
-					{id="72", coord="92, 16, 228", empty=true},
-					{id="73", coord="228, 16, 236", empty=true},
-					{id="74", coord="220, 16, 236", empty=true},
-					{id="75", coord="212, 16, 236", empty=true},
-					{id="76", coord="204, 16, 236", empty=true},
-					{id="77", coord="196, 16, 236", empty=true},
-					{id="78", coord="188, 16, 236", empty=true},
-					{id="79", coord="180, 16, 236", empty=true},
-					{id="80", coord="172, 16, 236", empty=true},
-					{id="81", coord="164, 16, 236", empty=true},
-					{id="82", coord="156, 16, 236", empty=true},
-					{id="83", coord="148, 16, 236", empty=true},
-					{id="84", coord="140, 16, 236", empty=true},
-					{id="85", coord="132, 16, 236", empty=true},
-					{id="86", coord="124, 16, 236", empty=true},
-					{id="87", coord="116, 16, 236", empty=true},
-					{id="88", coord="108, 16, 236", empty=true},
-					{id="89", coord="100, 16, 236", empty=true},
-					{id="90", coord="92, 16, 236", empty=true},
-					{id="91", coord="228, 16, 244", empty=true},
-					{id="92", coord="220, 16, 244", empty=true},
-					{id="93", coord="212, 16, 244", empty=true},
-					{id="94", coord="204, 16, 244", empty=true},
-					{id="95", coord="196, 16, 244", empty=true},
-					{id="96", coord="188, 16, 244", empty=true},
-					{id="97", coord="180, 16, 244", empty=true},
-					{id="98", coord="172, 16, 244", empty=true},
-					{id="99", coord="164, 16, 244", empty=true},
-					{id="100", coord="156, 16, 244", empty=true},
-					{id="101", coord="148, 16, 244", empty=true},
-					{id="102", coord="140, 16, 244", empty=true},
-					{id="103", coord="132, 16, 244", empty=true},
-					{id="104", coord="124, 16, 244", empty=true},
-					{id="105", coord="116, 16, 244", empty=true},
-					{id="106", coord="108, 16, 244", empty=true},
-					{id="107", coord="100, 16, 244", empty=true},
-					{id="108", coord="92, 16, 244", empty=true},
-					{id="109", coord="212, 16, 252", empty=true},
-					{id="110", coord="204, 16, 252", empty=true},
-					{id="111", coord="196, 16, 252", empty=true},
-					{id="112", coord="188, 16, 252", empty=true},
-					{id="113", coord="180, 16, 252", empty=true},
-					{id="114", coord="172, 16, 252", empty=true},
-					{id="115", coord="164, 16, 252", empty=true},
-					{id="116", coord="156, 16, 252", empty=true},
-					{id="117", coord="148, 16, 252", empty=true},
-					{id="118", coord="140, 16, 252", empty=true},
-					{id="119", coord="132, 16, 252", empty=true},
-					{id="120", coord="124, 16, 252", empty=true},
-					{id="121", coord="116, 16, 252", empty=true},
-					{id="122", coord="108, 16, 252", empty=true},
-					{id="123", coord="212, 16, 260", empty=true},
-					{id="124", coord="204, 16, 260", empty=true},
-					{id="125", coord="196, 16, 260", empty=true},
-					{id="126", coord="188, 16, 260", empty=true},
-					{id="127", coord="180, 16, 260", empty=true},
-					{id="128", coord="172, 16, 260", empty=true},
-					{id="129", coord="164, 16, 260", empty=true},
-					{id="130", coord="156, 16, 260", empty=true},
-					{id="131", coord="148, 16, 260", empty=true},
-					{id="132", coord="140, 16, 260", empty=true},
-					{id="133", coord="132, 16, 260", empty=true},
-					{id="134", coord="124, 16, 260", empty=true},
-					{id="135", coord="116, 16, 260", empty=true},
-					{id="136", coord="108, 16, 260", empty=true},
-					{id="137", coord="212, 16, 268", empty=true},
-					{id="138", coord="204, 16, 268", empty=true},
-					{id="139", coord="196, 16, 268", empty=true},
-					{id="140", coord="188, 16, 268", empty=true},
-					{id="141", coord="180, 16, 268", empty=true},
-					{id="142", coord="172, 16, 268", empty=true},
-					{id="143", coord="164, 16, 268", empty=true},
-					{id="144", coord="156, 16, 268", empty=true},
-					{id="145", coord="148, 16, 268", empty=true},
-					{id="146", coord="140, 16, 268", empty=true},
-					{id="147", coord="132, 16, 268", empty=true},
-					{id="148", coord="124, 16, 268", empty=true},
-					{id="149", coord="116, 16, 268", empty=true},
-					{id="150", coord="108, 16, 268", empty=true},
-					{id="151", coord="212, 16, 276", empty=true},
-					{id="152", coord="204, 16, 276", empty=true},
-					{id="153", coord="196, 16, 276", empty=true},
-					{id="154", coord="188, 16, 276", empty=true},
-					{id="155", coord="180, 16, 276", empty=true},
-					{id="156", coord="172, 16, 276", empty=true},
-					{id="157", coord="164, 16, 276", empty=true},
-					{id="158", coord="156, 16, 276", empty=true},
-					{id="159", coord="148, 16, 276", empty=true},
-					{id="160", coord="140, 16, 276", empty=true},
-					{id="161", coord="132, 16, 276", empty=true},
-					{id="162", coord="124, 16, 276", empty=true},
-					{id="163", coord="116, 16, 276", empty=true},
-					{id="164", coord="108, 16, 276", empty=true},
-					{id="165", coord="212, 16, 284", empty=true},
-					{id="166", coord="204, 16, 284", empty=true},
-					{id="167", coord="196, 16, 284", empty=true},
-					{id="168", coord="188, 16, 284", empty=true},
-					{id="169", coord="180, 16, 284", empty=true},
-					{id="170", coord="172, 16, 284", empty=true},
-					{id="171", coord="164, 16, 284", empty=true},
-					{id="172", coord="156, 16, 284", empty=true},
-					{id="173", coord="148, 16, 284", empty=true},
-					{id="174", coord="140, 16, 284", empty=true},
-					{id="175", coord="132, 16, 284", empty=true},
-					{id="176", coord="124, 16, 284", empty=true},
-					{id="177", coord="116, 16, 284", empty=true},
-					{id="178", coord="108, 16, 284", empty=true},
-					{id="179", coord="212, 16, 292", empty=true},
-					{id="180", coord="204, 16, 292", empty=true},
-					{id="181", coord="196, 16, 292", empty=true},
-					{id="182", coord="188, 16, 292", empty=true},
-					{id="183", coord="180, 16, 292", empty=true},
-					{id="184", coord="172, 16, 292", empty=true},
-					{id="185", coord="164, 16, 292", empty=true},
-					{id="186", coord="156, 16, 292", empty=true},
-					{id="187", coord="148, 16, 292", empty=true},
-					{id="188", coord="140, 16, 292", empty=true},
-					{id="189", coord="132, 16, 292", empty=true},
-					{id="190", coord="124, 16, 292", empty=true},
-					{id="191", coord="116, 16, 292", empty=true},
-					{id="192", coord="108, 16, 292", empty=true}
-				},
-				ocean = {}
-			}
-		},
-		fruits = {
-			{name="Strawberry", fullname="Strawberry"},
-			{name="Blueberry", fullname="Blueberry"},
-			{name="Watermelon", fullname="Watermelon"},
-			{name="Apple", fullname="Apple"},
-			{name="Orange", fullname="Orange"},
-			{name="Corn", fullname="Corn"},
-			{name="Banana", fullname="Banana"},
-			{name="Grape", fullname="Grape"},
-			{name="Pear", fullname="Pear"},
-			{name="PineApple", fullname="PineApple"},
-			{name="Dragon Fruit", fullname="DragonFruit"},
-			{name="Gold Mango", fullname="GoldMango"},
-			{name="Bloodstone Cycad", fullname="BloodstoneCycad"},
-			{name="Colossal Pinecone", fullname="ColossalPinecone"},
-			{name="Volt Ginkgo", fullname="VoltGinkgo"},
-			{name="Deepsea Pearl", fullname="DeepseaPearlFruit"},
-			{name="Durian", fullname="Durian"}
-		},
-		eggs = {
-			{name="Basic Egg"},
-			{name="Rare Egg"},
-			{name="Super Rare Egg"},
-			{name="Sea Weed Egg"},
-			{name="Legend Egg"},
-			{name="Clownfish Egg"},
-			{name="Prismatic Egg"},
-			{name="Lionfish Egg"},
-			{name="Hyper Egg"},
-			{name="Dark Goaty Egg"},
-			{name="Void Egg"},
-			{name="Bowser Egg"},
-			{name="Shark Egg"},
-			{name="Demon Egg"},
-			{name="Rhino Rock Egg"},
-			{name="Corn Egg"},
-			{name="Anglerfish Egg"},
-			{name="Bonedragon Egg"},
-			{name="Ultra Egg"},
-			{name="Unicorn Egg"},
-			{name="Unicorn Pro Egg"},
-			{name="Octopus Egg"},
-			{name="Saber Cub Egg"},
-			{name="General Kong Egg"},
-			{name="Kaiju Egg"}
-		},
-		muts = { 
-			"Dino", 
-			"Golden", 
-			"Diamon", 
-			"Electric", 
-			"Fire", 
-			"Jurassic", 
-			"Snow"
-		},
-		EggInventory = {},
-		FruitShop = {}
-	}
-}
-
-local function fireServer(obj, arg)
-	if type(arg) == "table" and arg[1] then
-		obj:FireServer(unpack(arg))
-	else
-		obj:FireServer(arg)
-	end
-end
-
-local function getNil(objType, objName)
-	for _, v in ipairs(getnilinstances()) do
-		if v.ClassName == objType and v.Name == objName then
-			return v
-		end
-	end
-end
-
-local function strToVector3(coordStr)
-	local x, y, z = coordStr:match("([^,]+), ([^,]+), ([^,]+)")
-	return Vector3.new(tonumber(x), tonumber(y), tonumber(z))
-end
-
------------------------------------------------------------
--- Config Module (Fixed)
------------------------------------------------------------
-local CONFIG_DIR = "PizzaHub/" .. tostring(Menu.playerData.userName) .. "/configs"
-local ACTIVE_CONFIG = "default"
-
-local Config = ConfigManager.new({
-    Eggs = { Selected = {}, AutoBuy = false },
-    Mutations = { Selected = {} },
-    PlantEggs = { SelectedEggs = {}, SelectedMuts = {}, Enabled = false },
-    Fruit = { Selected = {}, AutoBuy = false },
-    AutoFarm = { Enabled = false }
-}, CONFIG_DIR, "default.json")
-
------------------------------------------------------------
--- Utility
------------------------------------------------------------
-
-local function listConfigs()
-	local files = listfiles(CONFIG_DIR)
-	local names = {}
-	for _, file in ipairs(files) do
-		if file:match("%.json$") then
-			table.insert(names, file:match("([^/]+)%.json$"))
-			print(file:match("([^/]+)%.json$"))
-		end
-	end
-	table.sort(names)
-	return names
-end
-
-Config:Load()
-
-
-local autoBuyEggs, plantStage, autofarm, autoBuyFruit = false, false, false, false
-local selectedEggName, selectedMutName, selectedFruits = {}, {}, {}
-
-local islandName = player:GetAttribute("AssignedIslandName")
-
-local isRunning = false
-local isPaused = false
-local runId = 0
-local dupeRunning = false
-local dupePaused = false
-
-local fruitOptions = {}
-local fruitAmounts = {}
-local eggOptions = {}
-
-local selectedPlayerName = nil
 
 local menuVisible = true
 
@@ -1429,102 +21,41 @@ local plantThread
 
 -- MENU FUNC
 local function GetEggsInv()
-    local scrollingFrame = player.PlayerGui.ScreenStorage.Frame.Content:FindFirstChild("ScrollingFrame")
+    local scrollingFrame = player.PlayerGui:WaitForChild("ScreenStorage"):WaitForChild("Frame")
+        :WaitForChild("Content"):FindFirstChild("ScrollingFrame")
     local eggs = {}
-    if not scrollingFrame then return eggs end
+    if not scrollingFrame then
+        warn("No ScrollingFrame found in egg inventory UI.")
+        return eggs
+    end
 
-    for _, item in pairs(scrollingFrame:GetChildren()) do
+    for _, item in ipairs(scrollingFrame:GetChildren()) do
         local btn = item:FindFirstChild("BTN")
         if btn then
             local stat = btn:FindFirstChild("Stat")
             local mutsFolder = btn:FindFirstChild("Muts")
+
             local eggName = "Unknown"
-            if stat and stat:FindFirstChild("NAME") and stat.NAME:FindFirstChild("Value") then
-                local nameValue = stat.NAME.Value
-                if nameValue:IsA("TextLabel") then
-                    eggName = nameValue.Text
+            if stat and stat:FindFirstChild("NAME") then
+                local nameContainer = stat.NAME
+                local valueLabel = nameContainer:FindFirstChild("Value")
+                if valueLabel and valueLabel:IsA("TextLabel") then
+                    eggName = valueLabel.Text ~= "" and valueLabel.Text or "Unknown"
                 end
             end
 
             local visibleMut = nil
             if mutsFolder then
-                for _, mut in pairs(mutsFolder:GetChildren()) do
+                for _, mut in ipairs(mutsFolder:GetChildren()) do
                     if mut:IsA("GuiObject") and mut.Visible then
                         visibleMut = mut.Name
-                        break
-                    end
-                end
-            end
-
-            if visibleMut then
-                table.insert(eggs, {id = item.Name, name = eggName, mutation = visibleMut})
-            end
-        end
-    end
-
-    return eggs
-end
-
-GetEggsInv()
-
--- Live player dropdown
-local playerDropdown = Menu.tabs.main.left1:Dropdown({
-	Name = "Select Player",
-	Options = {},
-	Multi = false,
-	Callback = function(selected)
-		selectedPlayerName = selected
-		Window:Notify({
-			Title = "Player Selected",
-			Description = tostring(selected),
-			Lifetime = 2
-		})
-	end
-})
-
--- Now define RefreshPlayers
-local function RefreshPlayers()
-	local items = {}
-	for _, p in ipairs(Players:GetPlayers()) do
-		table.insert(items, p.Name)
-	end
-
-	local found = false
-	if selectedPlayerName then
-		for _, n in ipairs(items) do
-			if n == selectedPlayerName then
-				found = true
-				break
-			end
-		end
-	end
-	if not found then
-		selectedPlayerName = nil
-	end
-
-	-- Update dropdown
-	pcall(function()
-		playerDropdown:ClearOptions()
-		playerDropdown:InsertOptions(items)
-	end)
-end
-
--- Connect events
-Players.PlayerAdded:Connect(RefreshPlayers)
-Players.PlayerRemoving:Connect(RefreshPlayers)
-
--- Initial populate
-RefreshPlayers()
-
-
-
-for _, fruit in ipairs(Menu.data.fruits) do
+						-- Gift UI is now owned by GiftFeature (Start/Pause/Cancel and status label)
 	Menu.tabs.main.left2:Input({
 		Name = fruit.name,
 		Placeholder = "                   ",
 		AcceptedCharacters = "Numeric",
 		Callback = function(val)
-			fruitAmounts[fruit.fullname] = val
+			State.fruitAmounts[fruit.fullname] = val
 		end
 	})
 end
@@ -1536,15 +67,9 @@ local givenLabel = Menu.tabs.main.left2:Label({ Text = "Given: 0                
 Menu.tabs.main.left2:Button({
 	Name = "Start Gift Loop",
 	Callback = function()
-		local playerName = selectedPlayerName
+	local playerName = State.selectedPlayerName
 		if not playerName or playerName == "" then
 			Window:Notify({ Title = "Error", Description = "Please select a player.", Lifetime = 3 })
-			return
-		end
-
-		local targetPlayer = Players:FindFirstChild(playerName)
-		if not targetPlayer then
-			Window:Notify({ Title = "Error", Description = "Player not found: " .. tostring(playerName), Lifetime = 3 })
 			return
 		end
 
@@ -1553,15 +78,7 @@ Menu.tabs.main.left2:Button({
 			return
 		end
 
-		-- Build queue
-		local queue = {}
-		for _, fruit in ipairs(Menu.data.fruits) do
-			local count = fruitAmounts[fruit.fullname] or 0
-			for i = 1, count do
-				table.insert(queue, fruit.fullname)
-			end
-		end
-
+	local queue = Gift.buildQueue(Menu.data.fruits, State.fruitAmounts)
 		if #queue == 0 then
 			Window:Notify({ Title = "Error", Description = "No fruits selected!", Lifetime = 3 })
 			return
@@ -1573,34 +90,18 @@ Menu.tabs.main.left2:Button({
 		local myId = runId
 
 		task.spawn(function()
-			local given = 0
-			for _, fruitFullName in ipairs(queue) do
-				if not isRunning or myId ~= runId then break end
-				while isPaused and isRunning and myId == runId do task.wait(0.1) end
-
-				-- focus then send
-				pcall(function()
-					fireServer(CharacterRE,{"Focus", fruitFullName})
-				end)
-				task.wait(0.1)
-				pcall(function()
-					GiftRE:FireServer(targetPlayer)
-				end)
-
-				given += 1
-				local ok, _ = pcall(function() givenLabel:UpdateName("Given: " .. given .. "                                             Left: " .. (#queue - given)) end)
-				if not ok then pcall(function() givenLabel.Text = "Given: " .. given .. "                                             Left: " .. (#queue - given) end) end
-
-				task.wait(0.3)
+			local ok, result = pcall(function()
+				local success, givenOrErr = Gift.sendQueue(queue, playerName, Players, Window, remoteService)
+				if success then
+					Window:Notify({ Title = "Done!", Description = "Gift loop finished.", Lifetime = 4 })
+				end
+				return success, givenOrErr
+			end)
+			if not ok then
+				Window:Notify({ Title = "Error", Description = "Gift loop failed.", Lifetime = 4 })
 			end
-
-			if myId == runId then
-				isRunning = false
-				isPaused = false
-				pcall(function() givenLabel:UpdateName("Given: 0") end)
-				pcall(function() leftLabel:UpdateName("Left: 0") end)
-				Window:Notify({ Title = "Done!", Description = "Gift loop finished.", Lifetime = 4 })
-			end
+			isRunning = false
+			isPaused = false
 		end)
 	end
 })
@@ -1643,7 +144,8 @@ local EggDropdown1 = Menu.tabs.main.right:Dropdown({
 	Options = eggOptions,
 	Default = {  },
 	Callback = function(v)
-		table.insert(selectedEggName, v)
+		State.selectedEggName = {}
+		table.insert(State.selectedEggName, v)
 		Window:Notify({ Title = "Selected", Description = "Selected" .. v .. " Eggs!", Lifetime = 3 })
 	end
 })
@@ -1657,7 +159,8 @@ local MutsDropdown1 = Menu.tabs.main.right:Dropdown({
 	Options = Menu.data.muts,
 	Default = {  },
 	Callback = function(v)
-		table.insert(selectedEggName, v)
+		State.selectedMutName = {}
+		table.insert(State.selectedMutName, v)
 		Window:Notify({ Title = "Selected", Description = "Selected" .. v .. " Eggs!", Lifetime = 3 })
 	end
 })
@@ -1667,125 +170,26 @@ local totalInput = Menu.tabs.main.right:Input({
 	Name = "Total",
 	Placeholder = "Enter total",
 	AcceptedCharacters = "Numeric",
-	Callback = function(value)
+	Callback = function(Value)
+		-- store as number when possible
+		State.totalToGive = tonumber(Value) or 0
 	end
 })
-
 -- Start Give Loop button
 local dupeLabel = Menu.tabs.main.right:Label({ Text = "Given: 0                                             Left: 0" })
 
-Menu.tabs.main.right:Button({
-	Name = "execute dupe",
-	Callback = function()
-		Menu.data.EggInventory = GetEggsInv()
 
-		local totalToGive = tonumber(totalInput:GetInput()) or 0
-		if totalToGive <= 0 then totalToGive = #Menu.data.EggInventory end
-
-		local playerName = selectedPlayerName
-		if not playerName or playerName == "" then
-			Window:Notify({ Title = "Error", Description = "Please select a player.", Lifetime = 3 })
-			return
-		end
-
-		local targetPlayer = Players:FindFirstChild(playerName)
-		if not targetPlayer then
-			Window:Notify({ Title = "Error", Description = "Player not found: " .. tostring(playerName), Lifetime = 3 })
-			return
-		end
-
-		local targetChar = targetPlayer.Character
-		if targetChar and targetChar:FindFirstChild("HumanoidRootPart") and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-			player.Character.HumanoidRootPart.CFrame = targetChar.HumanoidRootPart.CFrame + Vector3.new(0,5,0)
-		end
-
-		if (not selectedEggName or #selectedEggName == 0) or (not selectedMutName or #selectedMutName == "") then
-			Window:Notify({
-				Title = "Error",
-				Description = "Select at least one egg and a mutation!",
-				Lifetime = 3
-			})
-			return
-		end
-
-		local queue = {}
-		for _, egg in ipairs(Menu.data.EggInventory) do
-			for _, allowedName in ipairs(selectedEggName) do
-				for _, allowedMut in ipairs(selectedMutName) do
-					if egg.name == allowedName and egg.mutation == allowedMut then
-						table.insert(queue, egg.id)
-						break
-					end
-				end
-			end
-		end
-
-		if #queue == 0 then
-			Window:Notify({Title = "Error", Description = "No matching eggs found!", Lifetime = 3})
-			return
-		end
-
-		while #queue > totalToGive do
-			table.remove(queue)
-		end
-
-		-- Start give loop
-		local given = 0
-		dupeRunning = true
-		dupePaused = false
-		runId += 1
-		local myId = runId
-
-		task.spawn(function()
-			for _, eggId in ipairs(queue) do
-				if not dupeRunning then break end
-				while dupePaused and dupeRunning and myId == runId do task.wait(0.1) end
-				
-
-				pcall(function() DeployRE:FireServer({ event = "deploy", uid = eggId }) end)
-				task.wait(0.1)
-				pcall(function() CharacterRE:FireServer("Focus", eggId) end)
-				task.wait(0.1)
-				pcall(function() GiftRE:FireServer(targetPlayer) end)
-
-				given += 1
-				pcall(function()
-					dupeLabel:UpdateName("Given: " .. given .. "                                             Left: " .. (#queue - given))
-				end)
-				task.wait(0.1)
-			end
-
-			dupeRunning = false
-			Window:Notify({Title = "Done", Description = "Egg give finished.", Lifetime = 3})
-			pcall(function() dupeLabel:UpdateName("Given: 0                                             Left: 0") end)
-		end)
-	end
+-- Mount Dupe feature (encapsulates execute dupe and related buttons)
+local DupeFeature = loadstring(game:HttpGet("https://raw.githubusercontent.com/space-bar-pixel/5ajuneuxf/refs/heads/main/module/Features/DupeFeature.lua"))()
+local dupeMount = DupeFeature.mount({
+	sections = { dupeSec1 = Menu.tabs.dupe.dupeSec1, main = { right = Menu.tabs.main.right }, dupe = Menu.tabs.main.right },
+	services = { Players = Players, Window = Window, remoteService = remoteService },
+	state = State
 })
+
 
 -- Pause / Resume
-Menu.tabs.main.right:Button({
-	Name = "Pause / Resume",
-	Callback = function()
-		if not dupeRunning then
-			Window:Notify({ Title = "Info", Description = "Not currently running.", Lifetime = 2 })
-			return
-		end
-		dupePaused = not dupePaused
-		Window:Notify({ Title = dupePaused and "Paused" or "Resumed", Description = "", Lifetime = 2 })
-	end
-})
-
--- Cancel Loop
-Menu.tabs.main.right:Button({
-	Name = "Cancel Loop",
-	Callback = function()
-		runId += 1
-		dupeRunning = false
-		dupePaused = false
-		pcall(function() dupeLabel:UpdateName("Given: 0                                             Left: 0") end)
-		Window:Notify({ Title = "Cancelled", Text = "Gift loop stopped.", Lifetime = 2 })
-	end
-})
+-- Dupe feature provides Pause/Resume and Cancel controls now (owned by Features/DupeFeature.lua)
 
 -----------------------------------------------------------
 -- AUTOFARM TAB
@@ -1900,9 +304,9 @@ local EggDropdown2 = Menu.tabs.egg.left1:Dropdown({
     Options = eggOptions,
     Default = Config:GetList("PlantEggs.SelectedEggs"),
     Callback = function(Value)
-        selectedEggName = {}
-        for v, State in next, Value do if State then table.insert(selectedEggName, v) end end
-        Config:SetListAndSave("PlantEggs.SelectedEggs", selectedEggName)
+		State.selectedEggName = {}
+		for v, S in next, Value do if S then table.insert(State.selectedEggName, v) end end
+		Config:SetListAndSave("PlantEggs.SelectedEggs", State.selectedEggName)
     end
 })
 
@@ -1914,9 +318,9 @@ local MutsDropdown2 = Menu.tabs.egg.left1:Dropdown({
     Options = Menu.data.muts,
     Default = Config:GetList("PlantEggs.SelectedMuts"),
     Callback = function(Value)
-        selectedMutName = {}
-        for v, State in next, Value do if State then table.insert(selectedMutName, v) end end
-        Config:SetListAndSave("PlantEggs.SelectedMuts", selectedMutName)
+		State.selectedMutName = {}
+		for v, S in next, Value do if S then table.insert(State.selectedMutName, v) end end
+		Config:SetListAndSave("PlantEggs.SelectedMuts", State.selectedMutName)
     end
 })
 
@@ -1934,15 +338,15 @@ local AutoPlantsToggle = Menu.tabs.egg.left1:Toggle({
                     updatePlantStatus()
                     Menu.data.EggInventory = GetEggsInv()
                     -- validation
-                    if (#selectedEggName == 0 or #selectedMutName == 0) then
+					if (not State.selectedEggName or #State.selectedEggName == 0 or not State.selectedMutName or #State.selectedMutName == 0) then
                         Window:Notify({ Title = "Error", Description = "Select at least one egg and mutation!", Lifetime = 3 })
                         return
                     end
                     -- queue logic
                     local queue = {}
                     for _, egg in ipairs(Menu.data.EggInventory) do
-                        for _, n in ipairs(selectedEggName) do
-                            for _, m in ipairs(selectedMutName) do
+						for _, n in ipairs(State.selectedEggName) do
+							for _, m in ipairs(State.selectedMutName) do
                                 if egg.name == n and egg.mutation == m then
                                     table.insert(queue, egg.id)
                                 end
@@ -1990,19 +394,15 @@ Menu.tabs.egg.left1:Button({
 			if root then
 				local prompt = root:FindFirstChildOfClass("ProximityPrompt")
 				if prompt then
-                    if type(prompt.InputHoldBegin) == "function" then
-                        prompt.HoldDuration = 0
-                        pcall(function() prompt:InputHoldBegin() end)
-                        task.wait(prompt.HoldDuration)
-                        pcall(function() prompt:InputHoldEnd() end)
-                    else
-                        warn("No programmatic trigger method available on this client.")
-                    end
-                end
+					task.spawn(function()
+						fireproximityprompt(prompt, 1) 
+					end)
+				end
 			end
 		end
 	end
 })
+
 
 local island = workspace.Art:FindFirstChild(islandName)
 local conveyor9, belt
@@ -2070,9 +470,9 @@ local EggDropdown3 = Menu.tabs.egg.right1:Dropdown({
     Options = eggOptions,
     Default = Config:GetList("Eggs.Selected"),
     Callback = function(Value)
-        selectedEggName = {}
-        for v, State in next, Value do if State then table.insert(selectedEggName, v) end end
-        Config:SetListAndSave("Eggs.Selected", selectedEggName)
+		State.selectedEggName = {}
+		for v, S in next, Value do if S then table.insert(State.selectedEggName, v) end end
+		Config:SetListAndSave("Eggs.Selected", State.selectedEggName)
     end
 })
 
@@ -2083,9 +483,9 @@ local MutsDropdown3 = Menu.tabs.egg.right1:Dropdown({
     Options = Menu.data.muts,
     Default = Config:GetList("Mutations.Selected"),
     Callback = function(Value)
-        selectedMutName = {}
-        for v, State in next, Value do if State then table.insert(selectedMutName, v) end end
-        Config:SetListAndSave("Mutations.Selected", selectedMutName)
+		State.selectedMutName = {}
+		for v, S in next, Value do if S then table.insert(State.selectedMutName, v) end end
+		Config:SetListAndSave("Mutations.Selected", State.selectedMutName)
     end
 })
 
@@ -2099,11 +499,11 @@ local AutoBuyEToggle = Menu.tabs.egg.right1:Toggle({
             task.spawn(function()
                 while autoBuyEggs do
                     local eggsOnBelt = getAllEggOnBelt()
-                    for _, egg in ipairs(eggsOnBelt) do
-                        if table.find(selectedEggName, egg.name) and table.find(selectedMutName, egg.mutate) then
-                            pcall(function() CharacterRE:FireServer("BuyEgg", egg.fullname) end)
-                        end
-                    end
+					for _, egg in ipairs(eggsOnBelt) do
+						if table.find(State.selectedEggName, egg.name) and table.find(State.selectedMutName, egg.mutate) then
+							pcall(function() CharacterRE:FireServer("BuyEgg", egg.fullname) end)
+						end
+					end
                     task.wait(0.3)
                 end
             end)
@@ -2124,22 +524,22 @@ local FruitDropdown = Menu.tabs.fruit.left1:Dropdown({
     Multi = true,
     Options = fruitOptions,
     Default = Config:GetList("Fruit.Selected"),
-    Callback = function(Value)
-        selectedFruits = {}
-        local nameFruits = {}
-        for v, State in next, Value do
-            if State then
-                for _, f in ipairs(Menu.data.fruits) do
-                    if f.name == v then
-                        table.insert(selectedFruits, f.fullname)
-                        table.insert(nameFruits, f.name)
-                        break
-                    end
-                end
-            end
-        end
-        Config:SetListAndSave("Fruit.Selected", nameFruits)
-    end
+	Callback = function(Value)
+		State.selectedFruits = {}
+		local nameFruits = {}
+		for v, S in next, Value do
+			if S then
+				for _, f in ipairs(Menu.data.fruits) do
+					if f.name == v then
+						table.insert(State.selectedFruits, f.fullname)
+						table.insert(nameFruits, f.name)
+						break
+					end
+				end
+			end
+		end
+		Config:SetListAndSave("Fruit.Selected", nameFruits)
+	end
 })
 
 local AutoBuyFToggle = Menu.tabs.fruit.left1:Toggle({
