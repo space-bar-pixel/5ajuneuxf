@@ -45,7 +45,7 @@ function Section.new(rawSection)
     end
 
     function self:Label(spec)
-        if self._raw and self._raw:Label then
+        if self._raw and self._raw.Label then
             return self._raw:Label(spec)
         end
         return { UpdateName = function() end }
