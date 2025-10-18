@@ -1982,13 +1982,77 @@ local island = workspace.Art:FindFirstChild(islandName)
 local conveyor9, belt
 
 if island and island:FindFirstChild("ENV") then
-	local conveyor = island.ENV:FindFirstChild("Conveyor")
-	if conveyor then
-		conveyor9 = conveyor:FindFirstChild("Conveyor9")
-		if conveyor9 then
-			belt = conveyor9:FindFirstChild("Belt")
+	local conveyorFolder = island.ENV:FindFirstChild("Conveyor")
+	if conveyorFolder then
+		for _, conveyor in ipairs(conveyorFolder:GetChildren()) do
+			if conveyor:IsA("Model") and conveyor.Name:match("^Conveyor%d+$") then
+				local foundBelt = conveyor:FindFirstChild("Belt")
+				if foundBelt then
+					belt = foundBelt
+					conveyor9 = conveyor
+					break
+				end
+			end
 		end
 	end
+end
+
+local island = workspace.Art:FindFirstChild(islandName)
+local conveyor9, belt
+
+if island and island:FindFirstChild("ENV") then
+	local conveyorFolder = island.ENV:FindFirstChild("Conveyor")
+	if conveyorFolder then
+		for _, conveyor in ipairs(conveyorFolder:GetChildren()) do
+			if conveyor:IsA("Model") and conveyor.Name:match("^Conveyor%d+$") then
+				local foundBelt = conveyor:FindFirstChild("Belt")
+				if foundBelt then
+					belt = foundBelt
+					conveyor9 = conveyor
+					break
+				end
+			end
+		end
+	end
+end
+
+local function getAllEggOnBelt()
+	local results = {}
+	if not belt then
+		return results
+	end
+
+	for _, obj in ipairs(belt:GetChildren()) do
+		local rootPart = obj:FindFirstChild("RootPart")
+		if not rootPart then
+			continue
+		end
+
+		local gui = rootPart:FindFirstChild("GUI/EggGUI")
+		if not gui then
+			continue
+		end
+
+		local eggNameObj = gui:FindFirstChild("EggName")
+		local mutateObj = gui:FindFirstChild("Mutate")
+
+		if eggNameObj and mutateObj then
+			local eggName = eggNameObj.Text ~= "" and eggNameObj.Text or "Unknown"
+			local mutateValue = mutateObj.Text ~= "" and mutateObj.Text or "Dino"
+
+			table.insert(results, {
+				fullname = obj.Name,
+				name = eggName,
+				mutate = mutateValue
+			})
+		end
+	end
+
+	-- for i, egg in ipairs(results) do
+	-- 	print(string.format("[%d] %s | Name: %s | Mutate: %s", i, egg.fullname, egg.name, egg.mutate))
+	-- end
+
+	return results
 end
 
 local function getAllEggOnBelt()
@@ -2014,14 +2078,13 @@ local function getAllEggOnBelt()
 				name = eggName,
 				mutate = mutateValue
 			})
-            
 		end
 	end
 
-    for _, egg in ipairs(results) do
-        print(string.format("Egg on Belt - Fullname: %s | Name: %s | Mutation: %s", egg.fullname, egg.name, egg.mutate))
-    end
-    
+    -- for _, egg in ipairs(results) do
+    --     print(string.format("Egg on Belt - Fullname: %s | Name: %s | Mutation: %s", egg.fullname, egg.name, egg.mutate))
+    -- end
+
 	return results
 end
 
@@ -2035,11 +2098,7 @@ local EggDropdown3 = Menu.tabs.egg.right1:Dropdown({
 	Default = {  }, -- load saved
 	Callback = function(Value)
 		selectedEggName = {}
-		for v, State in next, Value do
-			if State then
-				table.insert(selectedEggName, v)
-			end
-		end
+		for v, S in next, Value do if S then table.insert(selectedEggName, v) end end
 	end
 }, "AutoBuyEggDropdown3")
 
@@ -2053,11 +2112,7 @@ local MutsDropdown3 = Menu.tabs.egg.right1:Dropdown({
 	Default = {  }, -- load saved
 	Callback = function(Value)
 		selectedMutName = {}
-		for v, State in next, Value do
-			if State then
-				table.insert(selectedMutName, v)
-			end
-		end
+		for v, S in next, Value do if S then table.insert(selectedMutName, v) end end
 	end
 }, "AutoBuyMutsDropdown3")
 
@@ -2067,22 +2122,19 @@ local AutoBuyEToggle = Menu.tabs.egg.right1:Toggle({
 	Default = false,
 	Callback = function(state)
 		autoBuyEggs = state
-
-		if state then
-			task.spawn(function()
-				while autoBuyEggs do
-					local eggsOnBelt = getAllEggOnBelt()
+        if state then
+            task.spawn(function()
+                while autoBuyEggs do
+                    local eggsOnBelt = getAllEggOnBelt()
 					for _, egg in ipairs(eggsOnBelt) do
-						local matchEgg = table.find(selectedEggName, egg.name)
-						local matchMut = table.find(selectedMutName, egg.mutate)
-						if matchEgg and matchMut then
+						if table.find(selectedEggName, egg.name) and table.find(selectedMutName, egg.mutate) then
 							pcall(function() CharacterRE:FireServer("BuyEgg", egg.fullname) end)
 						end
 					end
-					task.wait(0.3)
-				end
-			end)
-		end
+                    task.wait(0.3)
+                end
+            end)
+        end
 	end
 }, "AutoBuyEToggle")
 
@@ -2160,13 +2212,7 @@ Menu.tabs.dupe.dupeSec1:Button({
 	Name = "Start Dupe",
 	Callback = function()
 
-		local object = game:GetService("ReplicatedStorage").Remote.PetRE
-		local args = {
-			"Sell",
-			"f16d33374b2746faac49438b78b2cc70"
-		}
-
-		object:FireServer(unpack(args))
+		getAllEggOnBelt()
 
 	end
 })
