@@ -40,7 +40,7 @@ local State = {
     selectedFruits = {},
     fruitAmounts = {},
     EggInventory = {},
-    totalToGive = 0,
+    totalToGive = 0
 }
 
 -- Use the Menu builder so sections are wrapped exactly as expected by features
