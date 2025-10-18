@@ -31,14 +31,7 @@ function GiftFeature.mount(ctx)
     local runId = 0
 
     for _, fruit in ipairs(Data.fruits) do
-        section:Input({
-            Name = fruit.name,
-            Placeholder = "                   ",
-            AcceptedCharacters = "Numeric",
-            Callback = function(val)
-                state.fruitAmounts[fruit.fullname] = val
-            end
-        })
+        print("Fruit:", fruit.name)
     end
 
     -- status label owned by feature
