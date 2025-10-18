@@ -4745,8 +4745,11 @@ function MacLib:Window(Settings)
 					Name = "Set as autoload",
 					Callback = function()
 						local name = configSelection.Value
-						writefile(MacLib.Folder .. "/settings/autoload.txt", name)
+						local path = string.format("%s/%s/settings/autoload.txt", tostring(MacLib.Folder), tostring(MacLib.PlayerName))
+						
+						writefile(path, name)
 						autoloadLabel:UpdateName("Autoload config: " .. name)
+						
 						WindowFunctions:Notify({
 							Title = "Interface",
 							Description = string.format("Set %q as autoload", name),
