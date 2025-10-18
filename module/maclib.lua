@@ -4667,7 +4667,8 @@ function MacLib:Window(Settings)
 				configSection:Button({
 					Name = "Create Config",
 					Callback = function()
-						if not inputPath or string.gsub(inputPath, " ", "") == "" then
+						-- Check for empty or whitespace-only names
+						if not inputPath or string.gsub(inputPath, "%s+", "") == "" then
 							WindowFunctions:Notify({
 								Title = "Interface",
 								Description = "Config name cannot be empty."
@@ -4675,21 +4676,35 @@ function MacLib:Window(Settings)
 							return
 						end
 
-						local success, returned = MacLib:SaveConfig(inputPath)
+						-- Ensure folder and player name are set
+						if not MacLib.Folder or not MacLib.PlayerName then
+							WindowFunctions:Notify({
+								Title = "Interface",
+								Description = "Config system not initialized. Please call SetFolder and SetPlayer first."
+							})
+							return
+						end
+
+						-- Attempt to save config
+						local success, err = MacLib:SaveConfig(inputPath)
 						if not success then
 							WindowFunctions:Notify({
 								Title = "Interface",
-								Description = "Unable to save config, return error: " .. returned
+								Description = "Unable to save config: " .. tostring(err)
 							})
+							return
 						end
 
+						-- Notify success
 						WindowFunctions:Notify({
 							Title = "Interface",
-							Description = string.format("Created config %q", inputPath),
+							Description = string.format("Created config %q successfully!", inputPath),
 						})
 
+						-- Refresh the dropdown list
+						local list = MacLib:RefreshConfigList()
 						configSelection:ClearOptions()
-						configSelection:InsertOptions(MacLib:RefreshConfigList())
+						configSelection:InsertOptions(list)
 					end,
 				})
 
