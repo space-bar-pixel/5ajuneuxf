@@ -5571,7 +5571,7 @@ function MacLib:Window(Settings)
 	function MacLib:RefreshConfigList()
 		if isStudio or not (isfolder and listfiles) then return {} end
 
-		local settingsDir = string.format("%s/%s/settings", MacLib.Folder, MacLib.PlayerName)
+		local settingsDir = string.format("%s/%s/settings", tostring(MacLib.Folder), tostring(MacLib.PlayerName))
 		if not isfolder(settingsDir) then return {} end
 
 		local list = listfiles(settingsDir)
