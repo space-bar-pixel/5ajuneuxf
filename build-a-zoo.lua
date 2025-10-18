@@ -1,7 +1,22 @@
 -- build-a-zoo.lua
--- Lightweight composition root that creates the UI and mounts features.
 
-local MacLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/space-bar-pixel/5ajuneuxf/refs/heads/main/module/maclib.lua"))()
+-- Helper to safely load remote modules
+local function loadRemote(url)
+    local ok, result = pcall(function()
+        local body = game:HttpGet(url)
+        local fn, err = loadstring(body)
+        if not fn then error("compile error: " .. tostring(err)) end
+        return fn()
+    end)
+    if not ok then
+        warn("[build-a-zoo] failed to load: ", url, " - ", tostring(result))
+        return nil
+    end
+    return result
+end
+
+local MacLib = loadRemote("https://raw.githubusercontent.com/space-bar-pixel/5ajuneuxf/refs/heads/main/maclib.lua")
+if not MacLib then error("Failed to load MacLib") end
 
 -- Shared state passed by reference to features
 local State = {
@@ -14,38 +29,34 @@ local State = {
     totalToGive = 0,
 }
 
--- Create UI window
-local Window = MacLib:Window({
-    Title = "Pizza Hub - Build a Zoo",
-    Subtitle = "",
-    Size = UDim2.fromOffset(900, 650),
-    DragStyle = 1,
-    DisabledWindowControls = {},
-    ShowUserInfo = false,
-    Keybind = Enum.KeyCode.RightControl,
-    AcrylicBlur = true,
-})
+-- Use the Menu builder so sections are wrapped exactly as expected by features
+local MenuBuilder = loadRemote("https://raw.githubusercontent.com/space-bar-pixel/5ajuneuxf/refs/heads/main/Menu/Menu.lua")
+if not MenuBuilder or type(MenuBuilder.new) ~= "function" then
+    error("Failed to load Menu builder")
+end
 
--- Simple tab layout used by features (adapts to the expected Menu.tabs.* shape)
+local Menu = MenuBuilder.new({ MacLib = MacLib, Title = "Pizza Hub - Build a Zoo", Subtitle = "", Size = UDim2.fromOffset(900,650), DragStyle = 1, DisabledWindowControls = {}, ShowUserInfo = false, Keybind = Enum.KeyCode.RightControl, AcrylicBlur = true })
+local Window = Menu.Window
+
 local tabs = {}
-tabs.main = { left1 = Window:Tab({ Name = "Main Left1" }), left2 = Window:Tab({ Name = "Main Left2" }), right = Window:Tab({ Name = "Main Right" }) }
-tabs.dupe = { dupeSec1 = Window:Tab({ Name = "Dupe" }) }
-tabs.auto = { autoSec1 = Window:Tab({ Name = "Auto" }) }
-tabs.egg = { left1 = Window:Tab({ Name = "Egg Left" }), right1 = Window:Tab({ Name = "Egg Right" }) }
-tabs.fruit = { left1 = Window:Tab({ Name = "Fruit" }) }
-tabs.setting = { settingSec1 = Window:Tab({ Name = "Settings" }), settingSec3 = Window:Tab({ Name = "Advanced" }) }
+tabs.main = { left1 = Menu.mainSecLeft1, left2 = Menu.mainSecLeft2, right = Menu.mainSecRight }
+tabs.dupe = { dupeSec1 = Menu.dupeSec1 }
+tabs.auto = { autoSec1 = Menu.autoSec1 }
+tabs.egg = { left1 = Menu.eggSec1, right1 = Menu.eggSec2 }
+tabs.fruit = { left1 = Menu.FruitSec1 }
+tabs.setting = { settingSec1 = Menu.settingSec1, settingSec3 = Menu.settingSec3 }
 
 -- Minimal services bag for features
 local services = {
     Players = game:GetService("Players"),
     Window = Window,
-    remoteService = loadstring(game:HttpGet("https://raw.githubusercontent.com/space-bar-pixel/5ajuneuxf/refs/heads/main/module/Services/RemoteService.lua"))(),
-    Data = loadstring(game:HttpGet("https://raw.githubusercontent.com/space-bar-pixel/5ajuneuxf/refs/heads/main/module/Data.lua"))(),
+    remoteService = loadstring(game:HttpGet("https://raw.githubusercontent.com/space-bar-pixel/5ajuneuxf/refs/heads/main/Services/RemoteService.lua"))(),
+    Data = loadstring(game:HttpGet("https://raw.githubusercontent.com/space-bar-pixel/5ajuneuxf/refs/heads/main/Data.lua"))(),
 }
 
 -- Load feature modules remotely and mount them
-local GiftFeature = loadstring(game:HttpGet("https://raw.githubusercontent.com/space-bar-pixel/5ajuneuxf/refs/heads/main/module/Features/GiftFeature.lua"))()
-local DupeFeature = loadstring(game:HttpGet("https://raw.githubusercontent.com/space-bar-pixel/5ajuneuxf/refs/heads/main/module/Features/DupeFeature.lua"))()
+local GiftFeature = loadstring(game:HttpGet("https://raw.githubusercontent.com/space-bar-pixel/5ajuneuxf/refs/heads/main/Features/GiftFeature.lua"))()
+local DupeFeature = loadstring(game:HttpGet("https://raw.githubusercontent.com/space-bar-pixel/5ajuneuxf/refs/heads/main/Features/GiftFeature.lua"))()
 
 local giftMount = GiftFeature.mount({ sections = { left2 = tabs.main.left2, main = { left2 = tabs.main.left2 } }, services = services, state = State })
 local dupeMount = DupeFeature.mount({ sections = { dupeSec1 = tabs.dupe.dupeSec1, main = { right = tabs.main.right }, dupe = tabs.main.right }, services = services, state = State })
