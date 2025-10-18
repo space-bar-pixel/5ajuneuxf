@@ -1505,6 +1505,7 @@ RefreshPlayers()
 for _, fruit in ipairs(Menu.data.fruits) do
 	Menu.tabs.main.left2:Input({
 		Name = fruit.name,
+        IgnoreConfig = true,
 		Placeholder = "                   ",
 		AcceptedCharacters = "Numeric",
 		Callback = function(val)
@@ -1660,7 +1661,7 @@ local totalInput = Menu.tabs.main.right:Input({
 local dupeLabel = Menu.tabs.main.right:Label({ Text = "Given: 0                                             Left: 0" })
 
 Menu.tabs.main.right:Button({
-	Name = "execute dupe",
+	Name = "execute give loop",
 	Callback = function()
 		Menu.data.EggInventory = GetEggsInv()
 
@@ -2034,7 +2035,7 @@ local EggDropdown3 = Menu.tabs.egg.right1:Dropdown({
 			end
 		end
 	end
-})
+}, "AutoBuyEggDropdown3")
 
 -- Mutation Dropdown
 local MutsDropdown3 = Menu.tabs.egg.right1:Dropdown({
@@ -2052,7 +2053,7 @@ local MutsDropdown3 = Menu.tabs.egg.right1:Dropdown({
 			end
 		end
 	end
-})
+}, "AutoBuyMutsDropdown3")
 
 
 local AutoBuyEToggle = Menu.tabs.egg.right1:Toggle({
@@ -2077,7 +2078,7 @@ local AutoBuyEToggle = Menu.tabs.egg.right1:Toggle({
 			end)
 		end
 	end
-})
+}, "AutoBuyEToggle")
 
 -----------------------------------------------------------
 -- FRUIT TAB
@@ -2108,7 +2109,7 @@ local FruitDropdown = Menu.tabs.fruit.left1:Dropdown({
 			end
 		end
 	end
-})
+}, "FruitDropdown")
 
 -- Auto Buy Fruit Toggle
 local AutoBuyFToggle = Menu.tabs.fruit.left1:Toggle({
@@ -2144,7 +2145,7 @@ local AutoBuyFToggle = Menu.tabs.fruit.left1:Toggle({
             end)
         end
     end
-})
+}, "AutoBuyFToggle")
 
 -----------------------------------------------------------
 -- DUPE TAB
@@ -2204,7 +2205,7 @@ local AutoFarmToggle = Menu.tabs.auto.autoSec1:Toggle({
 			Window:Notify({ Title = "AutoFarm", Description = "Disabled", Lifetime = 2 })
 		end
 	end
-})
+}, "AutoFarmToggle")
 
 -----------------------------------------------------------
 -- SETTING TAB
