@@ -5497,7 +5497,7 @@ function MacLib:Window(Settings)
 	function MacLib:LoadAutoLoadConfig()
 		if isStudio or not (isfile and readfile) then return "Config system unavailable." end
 
-		local path = string.format("%s/%s/settings/autoload.txt", MacLib.Folder, MacLib.PlayerName)
+		local path = string.format("%s/%s/settings", tostring(MacLib.Folder), tostring(MacLib.PlayerName))
 		if isfile(path) then
 			local name = readfile(path)
 			local suc, err = MacLib:LoadConfig(name)
@@ -5527,7 +5527,7 @@ function MacLib:Window(Settings)
 		if isStudio or not writefile then return false, "Config system unavailable." end
 		if not Path then return false, "Please select a config file." end
 
-		local fullPath = string.format("%s/%s/settings/%s.json", MacLib.Folder, MacLib.PlayerName, Path)
+		local fullPath = string.format("%s/%s/settings/%s.json", tostring(MacLib.Folder), tostring(MacLib.PlayerName), Path)
 
 		local data = { objects = {} }
 
@@ -5551,7 +5551,7 @@ function MacLib:Window(Settings)
 		if isStudio or not (isfile and readfile) then return false, "Config system unavailable." end
 		if not Path then return false, "Please select a config file." end
 
-		local file = string.format("%s/%s/settings/%s.json", MacLib.Folder, MacLib.PlayerName, Path)
+		local file = string.format("%s/%s/settings/%s.json", tostring(MacLib.Folder), tostring(MacLib.PlayerName), Path)
 		if not isfile(file) then return false, "Invalid file" end
 
 		local success, decoded = pcall(HttpService.JSONDecode, HttpService, readfile(file))
