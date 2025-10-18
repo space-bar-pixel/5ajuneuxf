@@ -40,6 +40,7 @@ local Window = MacLib:Window({
 	AcrylicBlur = true,
 })
 
+local BuildFolderTre = MacLib:SetFolder("PizzaHub/" .. player.Name .. "/configs")
 -----------------------------------------------------------
 -- Define Sections (your structure)
 -----------------------------------------------------------
@@ -62,6 +63,7 @@ local dupeSec1 = DupeTab:Section({ Side = "Left" })
 
 local SettingGroup = Window:TabGroup()
 local Setting = SettingGroup:Tab({ Name = "Setting", Image = "" })
+Setting:InsertConfigSection( Side = "Left" )
 local settingSec1 = Setting:Section({ Side = "Left" })
 local settingSec2 = Setting:Section({ Side = "Left" })
 local settingSec3 = Setting:Section({ Side = "Right" })
@@ -1384,161 +1386,6 @@ local function strToVector3(coordStr)
 	return Vector3.new(tonumber(x), tonumber(y), tonumber(z))
 end
 
------------------------------------------------------------
--- Config Module (Fixed)
------------------------------------------------------------
-
-local CONFIG_DIR = "PizzaHub/configs"
-local ACTIVE_CONFIG = "default"
-local currentConfig = {}
-
--- Ensure folder exists
-if not isfolder(CONFIG_DIR) then
-	makefolder(CONFIG_DIR)
-end
-
------------------------------------------------------------
--- 🧱 Utility
------------------------------------------------------------
-
-local function listConfigs()
-	local files = listfiles(CONFIG_DIR)
-	local names = {}
-	for _, file in ipairs(files) do
-		if file:match("%.json$") then
-			table.insert(names, file:match("([^/]+)%.json$"))
-		end
-	end
-	table.sort(names)
-	return names
-end
-
-local function getConfigPath(name)
-	return CONFIG_DIR .. "/" .. name .. ".json"
-end
-
------------------------------------------------------------
--- 💾 Save / Load
------------------------------------------------------------
-
-local function saveConfig(name)
-	name = name or ACTIVE_CONFIG
-	local path = getConfigPath(name)
-	local ok, encoded = pcall(function()
-		return HttpService:JSONEncode(currentConfig)
-	end)
-	if ok then
-		writefile(path, encoded)
-		print("[Config] Saved:", name)
-	else
-		warn("[Config] Encode failed:", encoded)
-	end
-end
-
-local function loadConfig(name)
-	name = name or ACTIVE_CONFIG
-	local path = getConfigPath(name)
-
-	if not isfile(path) then
-		warn("[Config] Not found:", path)
-		return
-	end
-
-	local ok, decoded = pcall(function()
-		return HttpService:JSONDecode(readfile(path))
-	end)
-
-	if not ok then
-		warn("[Config] Decode failed:", decoded)
-		return
-	end
-
-	currentConfig = decoded
-	print("[Config] Loaded:", name)
-
-	-- Apply to UI elements
-	task.defer(function()
-		for _, tab in pairs(Menu.tabs) do
-			for _, section in pairs(tab) do
-				if type(section) == "table" and section.Elements then
-					for _, element in pairs(section.Elements) do
-						local key = element.Flag
-						if key and currentConfig[key] ~= nil then
-							if element.Type == "Toggle" then
-								element:SetValue(currentConfig[key])
-							elseif element.Type == "Slider" then
-								element:SetValue(currentConfig[key])
-							elseif element.Type == "Dropdown" then
-								element:SetValue(currentConfig[key])
-							elseif element.Type == "Input" then
-								element:SetValue(currentConfig[key])
-							elseif element.Type == "Colorpicker" then
-								element:SetValueRGB(Color3.fromHex(currentConfig[key]))
-							end
-						end
-					end
-				end
-			end
-		end
-	end)
-
-	Window:Notify({
-		Title = "Load Config",
-		Description = "Loaded config: " .. name,
-		Lifetime = 3
-	})
-end
-
------------------------------------------------------------
--- 🆕 Create / Delete
------------------------------------------------------------
-
-local function newConfig(name)
-	if not name or name == "" then
-		return warn("[Config] Invalid name")
-	end
-	currentConfig = {}
-	ACTIVE_CONFIG = name
-	saveConfig(name)
-	print("[Config] Created:", name)
-end
-
-local function deleteConfig(name)
-	if not name or name == "" then
-		return warn("[Config] Invalid name")
-	end
-	local path = getConfigPath(name)
-	if isfile(path) then
-		delfile(path)
-		print("[Config] Deleted:", name)
-	else
-		warn("[Config] File not found:", path)
-	end
-end
-
------------------------------------------------------------
--- 🧠 Get / Set
------------------------------------------------------------
-
-local function setConfig(key, value, autosave)
-	currentConfig[key] = value
-	if autosave then saveConfig(ACTIVE_CONFIG) end
-end
-
-local function getConfig(key, default)
-	return currentConfig[key] or default
-end
-
-function getSavedList(path, default)
-	local val = getConfig(path, default)
-	return type(val) == "table" and val or default or {}
-end
-
------------------------------------------------------------
--- Initialization
------------------------------------------------------------
--- loadConfig(ACTIVE_CONFIG)
-
 -- State vars
 local islandName = player:GetAttribute("AssignedIslandName")
 
@@ -2002,7 +1849,7 @@ local EggDropdown2 = Menu.tabs.egg.left1:Dropdown({
 	Multi = true,
 	Required = true,
 	Options = eggOptions,
-	Default = getSavedList("PlantEggs.SelectedEggs"), -- Load from config
+	Default = false,
 	Callback = function(Value)
 		selectedEggName = {}
 		for v, State in next, Value do
@@ -2010,7 +1857,6 @@ local EggDropdown2 = Menu.tabs.egg.left1:Dropdown({
 				table.insert(selectedEggName, v)
 			end
 		end
-		setConfig("PlantEggs.SelectedEggs", selectedEggName) -- Save to config
 	end
 })
 
@@ -2021,7 +1867,7 @@ local MutsDropdown2 = Menu.tabs.egg.left1:Dropdown({
 	Multi = true,
 	Required = true,
 	Options = Menu.data.muts,
-	Default = getSavedList("PlantEggs.SelectedMuts"),
+	Default = {  },
 	Callback = function(Value)
 		selectedMutName = {}
 		for v, State in next, Value do
@@ -2029,17 +1875,15 @@ local MutsDropdown2 = Menu.tabs.egg.left1:Dropdown({
 				table.insert(selectedMutName, v)
 			end
 		end
-		setConfig("PlantEggs.SelectedMuts", selectedMutName)
 	end
 })
 
 -- === Plant All Eggs Toggle (Persistent) ===
 local AutoPlantsToggle = Menu.tabs.egg.left1:Toggle({
 	Name = "Plant All Eggs",
-	Default = getConfig("PlantEggs.Enabled", false),
+	Default = false,
 	Callback = function(s)
 		plantStage = s
-		setConfig("PlantEggs.Enabled", s) -- Save state
 
 		if plantStage then
 			plantThread = task.spawn(function()
@@ -2184,7 +2028,7 @@ local EggDropdown3 = Menu.tabs.egg.right1:Dropdown({
 	Multi = true,
 	Required = false,
 	Options = eggOptions,
-	Default = getSavedList("Eggs.Selected"), -- load saved
+	Default = {  }, -- load saved
 	Callback = function(Value)
 		selectedEggName = {}
 		for v, State in next, Value do
@@ -2192,7 +2036,6 @@ local EggDropdown3 = Menu.tabs.egg.right1:Dropdown({
 				table.insert(selectedEggName, v)
 			end
 		end
-		setConfig("Eggs.Selected", selectedEggName) -- save
 	end
 })
 
@@ -2203,7 +2046,7 @@ local MutsDropdown3 = Menu.tabs.egg.right1:Dropdown({
 	Multi = true,
 	Required = false,
 	Options = Menu.data.muts,
-	Default = getSavedList("Mutations.Selected"), -- load saved
+	Default = {  }, -- load saved
 	Callback = function(Value)
 		selectedMutName = {}
 		for v, State in next, Value do
@@ -2211,17 +2054,15 @@ local MutsDropdown3 = Menu.tabs.egg.right1:Dropdown({
 				table.insert(selectedMutName, v)
 			end
 		end
-		setConfig("Mutations.Selected", selectedMutName) -- save
 	end
 })
 
 
 local AutoBuyEToggle = Menu.tabs.egg.right1:Toggle({
 	Name = "Automatic buy",
-	Default = getConfig("Eggs.AutoBuy", false),
+	Default = false,
 	Callback = function(state)
 		autoBuyEggs = state
-		setConfig("Eggs.AutoBuy", state) -- save
 
 		if state then
 			task.spawn(function()
@@ -2254,7 +2095,7 @@ local FruitDropdown = Menu.tabs.fruit.left1:Dropdown({
 	Multi = true,
 	Required = false,
 	Options = fruitOptions,
-	Default = getSavedList("Fruit.Selected"),
+	Default = {  },
 	Callback = function(Value)
 		selectedFruits = {}
 		local nameFruits = {}
@@ -2269,17 +2110,15 @@ local FruitDropdown = Menu.tabs.fruit.left1:Dropdown({
                 end
 			end
 		end
-		setConfig("Fruit.Selected", nameFruits)
 	end
 })
 
 -- Auto Buy Fruit Toggle
 local AutoBuyFToggle = Menu.tabs.fruit.left1:Toggle({
     Name = "AutoBuy",
-    Default = getConfig("Fruit.AutoBuy", false),
+    Default = false,
     Callback = function(stage)
         autoBuyFruit = stage
-        setConfig("Fruit.AutoBuy", stage)
 
         if stage then
             Window:Notify({ Title = "AutoBuy", Description = "Started", Lifetime = 2 })
@@ -2334,10 +2173,9 @@ Menu.tabs.dupe.dupeSec1:Button({
 -- AutoFarm Toggle
 local AutoFarmToggle = Menu.tabs.auto.autoSec1:Toggle({
 	Name = "AutoFarm",
-	Default = getConfig("AutoFarm.Enabled", false),
+	Default = false,
 	Callback = function(state)
 		autofarm = state
-		setConfig("AutoFarm.Enabled", state)
 
 		if state then
 			Window:Notify({ Title = "AutoFarm", Description = "Started", Lifetime = 2 })
@@ -2374,58 +2212,6 @@ local AutoFarmToggle = Menu.tabs.auto.autoSec1:Toggle({
 -----------------------------------------------------------
 -- SETTING TAB
 -----------------------------------------------------------
-local ConfigSelect = Menu.tabs.setting.settingSec1:Dropdown({
-	Name = "Select Config",
-	Search = true,
-	Multi = false,
-	Options = listConfigs(),
-	Default = { [ACTIVE_CONFIG] = true },
-	Callback = function(selected)
-		ACTIVE_CONFIG = selected
-		loadConfig(selected)
-		print("[Config] Active set to:", selected)
-	end
-})
-
-local function updateDropdownOptions()
-	ConfigSelect:ClearOptions()
-	ConfigSelect:InsertOptions(listConfigs())
-end
-
-local ConfigInput = Menu.tabs.setting.settingSec1:Input({
-	Name = "Create Config->",
-	Placeholder = "Config Name",
-	AcceptedCharacters = "AlphaNumeric",
-	Callback = function(input)
-		local newName = tostring(input)
-		if newName == "" then
-			Window:Notify({ Title = "Create Config", Description = "[Config] Please set a config name", Lifetime = 2 })
-			return
-		end
-		if table.find(listConfigs(), newName) then
-			Window:Notify({ Title = "Create Config", Description = "[Config] Config already exists: " .. newName, Lifetime = 2 })
-			return
-		end
-		newConfig(newName)
-		updateDropdownOptions()
-		Window:Notify({ Title = "Create Config", Description = "[Config] Created new config: " .. newName, Lifetime = 2 })
-	end
-})
-
-Menu.tabs.setting.settingSec1:Button({
-	Name = "💾 Save Config",
-	Callback = function()
-		saveConfig(ACTIVE_CONFIG)
-	end
-})
-
-Menu.tabs.setting.settingSec1:Button({
-	Name = "🗑 Delete Config",
-	Callback = function()
-		deleteConfig(ACTIVE_CONFIG)
-		updateDropdownOptions()
-	end
-})
 
 Menu.tabs.setting.settingSec3:Keybind({
 	Name = "Set Key Bind",
@@ -2476,8 +2262,6 @@ player.CharacterAdded:Connect(function(char)
 	Menu.playerData.humanoidRootPart = char:WaitForChild("HumanoidRootPart")
 end)
 
-<<<<<<< HEAD
 RefreshPlayers()
-=======
-RefreshPlayers()
->>>>>>> b476e44213c61970fddc0c61eda2d4d17409babf
+
+MacLib:LoadAutoLoadConfig()
