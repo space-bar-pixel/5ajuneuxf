@@ -1352,7 +1352,8 @@ local Menu = {
 			{name="Colossal Pinecone", fullname="ColossalPinecone"},
 			{name="Volt Ginkgo", fullname="VoltGinkgo"},
 			{name="Deepsea Pearl", fullname="DeepseaPearlFruit"},
-			{name="Durian", fullname="Durian"}
+			{name="Durian", fullname="Durian"},
+            {name="Pumpkin", fullname="Pumpkin"}
 		},
 		eggs = {
 			{name="Basic Egg"},
