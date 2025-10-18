@@ -13,6 +13,7 @@ local function safeLoad(url)
 end
 
 local Gift = safeLoad("https://raw.githubusercontent.com/space-bar-pixel/5ajuneuxf/main/module/Gift.lua") or {}
+local Data = safeLoad("https://raw.githubusercontent.com/space-bar-pixel/5ajuneuxf/main/module/Data.lua") or {}
 
 local GiftFeature = {}
 
@@ -29,6 +30,17 @@ function GiftFeature.mount(ctx)
     local isPaused = false
     local runId = 0
 
+    for _, fruit in ipairs(Data.fruits) do
+        section:Input({
+            Name = fruit.name,
+            Placeholder = "                   ",
+            AcceptedCharacters = "Numeric",
+            Callback = function(val)
+                fruitAmounts[fruit.fullname] = val
+            end
+        })
+    end
+
     -- status label owned by feature
     local statusLabel = section:Label({ Text = "Given: 0                                             Left: 0" })
 
@@ -39,7 +51,7 @@ function GiftFeature.mount(ctx)
             end
         end)
     end
-
+    
     section:Button({ Name = "Start Gift Loop", Callback = function()
         local playerName = state.selectedPlayerName
         if not playerName or playerName == "" then

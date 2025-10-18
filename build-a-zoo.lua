@@ -123,7 +123,7 @@ end
 
 if DupeFeature and type(DupeFeature.mount) == "function" then
     local ok, res = pcall(function()
-        return DupeFeature.mount({ sections = { dupeSec1 = tabs.dupe.dupeSec1, main = { right = tabs.main.right }, dupe = tabs.main.right }, services = services, state = State })
+        return DupeFeature.mount({ sections = { dupeSec1 = tabs.main.right, main = { right = tabs.main.right }, dupe = tabs.main.right }, services = services, state = State })
     end)
     if ok then
         dupeMount = res

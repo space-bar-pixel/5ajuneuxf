@@ -12,9 +12,10 @@ local function safeLoad(url)
     return result
 end
 
-local Toggle = safeLoad("https://raw.githubusercontent.com/space-bar-pixel/5ajuneuxf/main/module/Menu/Controls/Toggle.lua")
 local Button = safeLoad("https://raw.githubusercontent.com/space-bar-pixel/5ajuneuxf/main/module/Menu/Controls/Button.lua")
+local Input = safeLoad("https://raw.githubusercontent.com/space-bar-pixel/5ajuneuxf/main/module/Menu/Controls/Input.lua")
 local Slider = safeLoad("https://raw.githubusercontent.com/space-bar-pixel/5ajuneuxf/main/module/Menu/Controls/Slider.lua")
+local Toggle = safeLoad("https://raw.githubusercontent.com/space-bar-pixel/5ajuneuxf/main/module/Menu/Controls/Toggle.lua")
 
 -- Fallback minimal stubs when controls fail to load
 local function makeStub()
@@ -23,6 +24,7 @@ local function makeStub()
     }
 end
 Toggle = Toggle or makeStub()
+Input = Input or makeStub()
 Button = Button or makeStub()
 Slider = Slider or makeStub()
 
@@ -36,6 +38,10 @@ function Section.new(rawSection)
         return Toggle.create(self._raw, spec)
     end
 
+    function self:Input(spec)
+        return Input.create(self._raw, spec)
+    end
+
     function self:Button(spec)
         return Button.create(self._raw, spec)
     end
@@ -45,7 +51,7 @@ function Section.new(rawSection)
     end
 
     function self:Label(spec)
-        if self._raw and self._raw.Label then
+        if self._raw and self._raw:Label then
             return self._raw:Label(spec)
         end
         return { UpdateName = function() end }

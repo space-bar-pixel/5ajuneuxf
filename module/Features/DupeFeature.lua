@@ -43,7 +43,7 @@ function DupeFeature.mount(ctx)
         end)
     end
 
-    dupeSection:Button({ Name = "Execute Dupe", Callback = function()
+    dupeSection:Button({ Name = "Give Egg", Callback = function()
         local playerName = state.selectedPlayerName
         if not playerName or playerName == "" then
             Window:Notify({ Title = "Error", Description = "Please select a player.", Lifetime = 3 })
