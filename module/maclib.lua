@@ -4677,10 +4677,10 @@ function MacLib:Window(Settings)
 						end
 
 						-- Ensure folder and player name are set
-						if not MacLib.Folder or not LocalPlayer.Name then
+						if not MacLib.Folder then
 							WindowFunctions:Notify({
 								Title = "Interface",
-								Description = "Config system not initialized. Please call SetFolder and SetPlayer first."
+								Description = "Config system not initialized. Please call SetFolder first."
 							})
 							return
 						end
