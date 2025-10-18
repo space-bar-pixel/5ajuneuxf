@@ -1344,8 +1344,8 @@ local Menu = {
 			{name="Unicorn Pro Egg"},
 			{name="Octopus Egg"},
 			{name="Saber Cub Egg"},
-			{name="General Kong Egg"},
-			{name="Kaiju Egg"}
+			{name="Kaiju Egg"},
+			{name="General Kong Egg"}
 		},
 		muts = { 
 			"Dino", 
@@ -1354,7 +1354,8 @@ local Menu = {
 			"Electric", 
 			"Fire", 
 			"Jurassic", 
-			"Snow"
+			"Snow",
+            "Halloween"
 		},
 		EggInventory = {},
 		FruitShop = {}
