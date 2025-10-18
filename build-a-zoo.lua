@@ -15,7 +15,7 @@ local function loadRemote(url)
     return result
 end
 
-local MacLib = loadRemote("https://raw.githubusercontent.com/space-bar-pixel/5ajuneuxf/refs/heads/main/maclib.lua")
+local MacLib = loadRemote("https://raw.githubusercontent.com/space-bar-pixel/5ajuneuxf/main/module/maclib.lua")
 if not MacLib then error("Failed to load MacLib") end
 
 -- Shared state passed by reference to features
@@ -30,7 +30,7 @@ local State = {
 }
 
 -- Use the Menu builder so sections are wrapped exactly as expected by features
-local MenuBuilder = loadRemote("https://raw.githubusercontent.com/space-bar-pixel/5ajuneuxf/refs/heads/main/Menu/Menu.lua")
+local MenuBuilder = loadRemote("https://raw.githubusercontent.com/space-bar-pixel/5ajuneuxf/main/module/Menu/Menu.lua")
 if not MenuBuilder or type(MenuBuilder.new) ~= "function" then
     error("Failed to load Menu builder")
 end
@@ -50,16 +50,37 @@ tabs.setting = { settingSec1 = Menu.settingSec1, settingSec3 = Menu.settingSec3 
 local services = {
     Players = game:GetService("Players"),
     Window = Window,
-    remoteService = loadstring(game:HttpGet("https://raw.githubusercontent.com/space-bar-pixel/5ajuneuxf/refs/heads/main/Services/RemoteService.lua"))(),
-    Data = loadstring(game:HttpGet("https://raw.githubusercontent.com/space-bar-pixel/5ajuneuxf/refs/heads/main/Data.lua"))(),
+    remoteService = loadRemote("https://raw.githubusercontent.com/space-bar-pixel/5ajuneuxf/main/module/Services/RemoteService.lua"),
+    Data = loadRemote("https://raw.githubusercontent.com/space-bar-pixel/5ajuneuxf/main/module/Data.lua"),
 }
 
--- Load feature modules remotely and mount them
-local GiftFeature = loadstring(game:HttpGet("https://raw.githubusercontent.com/space-bar-pixel/5ajuneuxf/refs/heads/main/Features/GiftFeature.lua"))()
-local DupeFeature = loadstring(game:HttpGet("https://raw.githubusercontent.com/space-bar-pixel/5ajuneuxf/refs/heads/main/Features/GiftFeature.lua"))()
+-- ConfigService integration: load locally and pass the MacLib instance so UI config uses same folder
+local ConfigService = loadRemote("https://raw.githubusercontent.com/space-bar-pixel/5ajuneuxf/main/module/Services/ConfigService.lua")
+local configServiceInstance
+if ConfigService and type(ConfigService.new) == "function" then
+    configServiceInstance = ConfigService.new(tostring(game:GetService("Players"):GetName()), MacLib)
+    services.ConfigService = configServiceInstance
+else
+    warn("ConfigService not available; config UI will operate on MacLib only")
+    services.ConfigService = nil
+end
 
-local giftMount = GiftFeature.mount({ sections = { left2 = tabs.main.left2, main = { left2 = tabs.main.left2 } }, services = services, state = State })
-local dupeMount = DupeFeature.mount({ sections = { dupeSec1 = tabs.dupe.dupeSec1, main = { right = tabs.main.right }, dupe = tabs.main.right }, services = services, state = State })
+-- Load feature modules remotely and mount them
+local GiftFeature = loadRemote("https://raw.githubusercontent.com/space-bar-pixel/5ajuneuxf/main/module/Features/GiftFeature.lua")
+local DupeFeature = loadRemote("https://raw.githubusercontent.com/space-bar-pixel/5ajuneuxf/main/module/Features/DupeFeature.lua")
+
+local giftMount, dupeMount
+if GiftFeature and type(GiftFeature.mount) == "function" then
+    giftMount = GiftFeature.mount({ sections = { left2 = tabs.main.left2, main = { left2 = tabs.main.left2 } }, services = services, state = State })
+else
+    warn("GiftFeature not available or missing mount(); skipping gift mount")
+end
+
+if DupeFeature and type(DupeFeature.mount) == "function" then
+    dupeMount = DupeFeature.mount({ sections = { dupeSec1 = tabs.dupe.dupeSec1, main = { right = tabs.main.right }, dupe = tabs.main.right }, services = services, state = State })
+else
+    warn("DupeFeature not available or missing mount(); skipping dupe mount")
+end
 
 -- Basic wiring: player selection helper (features expect a live Players service and Window)
 local Players = services.Players
@@ -76,9 +97,17 @@ Players.PlayerRemoving:Connect(function() RefreshPlayers() end)
 -- Keep a reference to the mounts to allow cleanup later
 local mounted = { gift = giftMount, dupe = dupeMount }
 
+-- Let MacLib perform autoload if configured
+pcall(function()
+    if type(MacLib.LoadAutoLoadConfig) == "function" then
+        MacLib:LoadAutoLoadConfig()
+    end
+end)
+
 -- Export a simple API for debugging when pasted into a LocalScript
 return {
     Window = Window,
     State = State,
     Mounts = mounted,
+    Services = services,
 }

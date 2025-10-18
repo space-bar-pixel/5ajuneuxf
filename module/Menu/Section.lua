@@ -1,6 +1,6 @@
-local Toggle = loadstring(game:HttpGet("https://raw.githubusercontent.com/space-bar-pixel/5ajuneuxf/refs/heads/main/module/Menu/Controls/Toggle.lua"))()
-local Button = loadstring(game:HttpGet("https://raw.githubusercontent.com/space-bar-pixel/5ajuneuxf/refs/heads/main/module/Menu/Controls/Button.lua"))()
-local Slider = loadstring(game:HttpGet("https://raw.githubusercontent.com/space-bar-pixel/5ajuneuxf/refs/heads/main/module/Menu/Controls/Slider.lua"))()
+local Toggle = loadstring(game:HttpGet("https://raw.githubusercontent.com/space-bar-pixel/5ajuneuxf/main/module/Menu/Controls/Toggle.lua"))()
+local Button = loadstring(game:HttpGet("https://raw.githubusercontent.com/space-bar-pixel/5ajuneuxf/main/module/Menu/Controls/Button.lua"))()
+local Slider = loadstring(game:HttpGet("https://raw.githubusercontent.com/space-bar-pixel/5ajuneuxf/main/module/Menu/Controls/Slider.lua"))()
 
 local Section = {}
 

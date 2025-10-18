@@ -1,4 +1,4 @@
-local Gift = loadstring(game:HttpGet("https://raw.githubusercontent.com/space-bar-pixel/5ajuneuxf/refs/heads/main/module/Gift.lua"))()
+local Gift = loadstring(game:HttpGet("https://raw.githubusercontent.com/space-bar-pixel/5ajuneuxf/main/module/Gift.lua"))()
 
 local GiftFeature = {}
 

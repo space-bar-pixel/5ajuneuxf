@@ -40,7 +40,7 @@ function Menu.new(opts)
     local raw_settingSec3 = Setting:Section({ Side = "Right" })
 
     -- wrap raw sections with our adapter
-    local Section = loadstring(game:HttpGet("https://raw.githubusercontent.com/space-bar-pixel/5ajuneuxf/refs/heads/main/module/Menu/Section.lua"))()
+    local Section = loadstring(game:HttpGet("https://raw.githubusercontent.com/space-bar-pixel/5ajuneuxf/main/module/Menu/Section.lua"))()
     local mainSecLeft1 = Section.new(raw_mainSecLeft1)
     local mainSecLeft2 = Section.new(raw_mainSecLeft2)
     local mainSecRight = Section.new(raw_mainSecRight)

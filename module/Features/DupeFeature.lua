@@ -1,4 +1,4 @@
-local Dupe = loadstring(game:HttpGet("https://raw.githubusercontent.com/space-bar-pixel/5ajuneuxf/refs/heads/main/module/Dupe.lua"))()
+local Dupe = loadstring(game:HttpGet("https://raw.githubusercontent.com/space-bar-pixel/5ajuneuxf/main/module/Dupe.lua"))()
 
 local DupeFeature = {}
 
