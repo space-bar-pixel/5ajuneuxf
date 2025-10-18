@@ -5495,9 +5495,11 @@ function MacLib:Window(Settings)
 	end
 
 	function MacLib:LoadAutoLoadConfig()
-		if isStudio or not (isfile and readfile) then return "Config system unavailable." end
+		if isStudio or not (isfile and readfile) then 
+			return "Config system unavailable." 
+		end
 
-		local path = string.format("%s/%s/settings", tostring(MacLib.Folder), tostring(MacLib.PlayerName))
+		local path = string.format("%s/%s/settings/autoload.txt", tostring(MacLib.Folder), tostring(MacLib.PlayerName))
 		if isfile(path) then
 			local name = readfile(path)
 			local suc, err = MacLib:LoadConfig(name)
