@@ -4677,7 +4677,7 @@ function MacLib:Window(Settings)
 						end
 
 						-- Ensure folder and player name are set
-						if not MacLib.Folder or not MacLib.PlayerName then
+						if not MacLib.Folder or not LocalPlayer.Name then
 							WindowFunctions:Notify({
 								Title = "Interface",
 								Description = "Config system not initialized. Please call SetFolder and SetPlayer first."
@@ -4760,7 +4760,7 @@ function MacLib:Window(Settings)
 					Name = "Set as autoload",
 					Callback = function()
 						local name = configSelection.Value
-						local path = string.format("%s/%s/settings/autoload.txt", tostring(MacLib.Folder), tostring(MacLib.PlayerName))
+						local path = string.format("%s/%s/settings/autoload.txt", tostring(MacLib.Folder), tostring(LocalPlayer.Name))
 						
 						writefile(path, name)
 						autoloadLabel:UpdateName("Autoload config: " .. name)
@@ -5517,7 +5517,7 @@ function MacLib:Window(Settings)
 			return "Config system unavailable." 
 		end
 
-		local path = string.format("%s/%s/settings/autoload.txt", tostring(MacLib.Folder), tostring(MacLib.PlayerName))
+		local path = string.format("%s/%s/settings/autoload.txt", tostring(MacLib.Folder), tostring(LocalPlayer.Name))
 		if isfile(path) then
 			local name = readfile(path)
 			local suc, err = MacLib:LoadConfig(name)
@@ -5547,7 +5547,7 @@ function MacLib:Window(Settings)
 		if isStudio or not writefile then return false, "Config system unavailable." end
 		if not Path then return false, "Please select a config file." end
 
-		local fullPath = string.format("%s/%s/settings/%s.json", tostring(MacLib.Folder), tostring(MacLib.PlayerName), Path)
+		local fullPath = string.format("%s/%s/settings/%s.json", tostring(MacLib.Folder), tostring(LocalPlayer.Name), Path)
 
 		local data = { objects = {} }
 
@@ -5571,7 +5571,7 @@ function MacLib:Window(Settings)
 		if isStudio or not (isfile and readfile) then return false, "Config system unavailable." end
 		if not Path then return false, "Please select a config file." end
 
-		local file = string.format("%s/%s/settings/%s.json", tostring(MacLib.Folder), tostring(MacLib.PlayerName), Path)
+		local file = string.format("%s/%s/settings/%s.json", tostring(MacLib.Folder), tostring(LocalPlayer.Name), Path)
 		if not isfile(file) then return false, "Invalid file" end
 
 		local success, decoded = pcall(HttpService.JSONDecode, HttpService, readfile(file))
@@ -5591,7 +5591,7 @@ function MacLib:Window(Settings)
 	function MacLib:RefreshConfigList()
 		if isStudio or not (isfolder and listfiles) then return {} end
 
-		local settingsDir = string.format("%s/%s/settings", tostring(MacLib.Folder), tostring(MacLib.PlayerName))
+		local settingsDir = string.format("%s/%s/settings", tostring(MacLib.Folder), tostring(LocalPlayer.Name))
 		if not isfolder(settingsDir) then return {} end
 
 		local list = listfiles(settingsDir)
