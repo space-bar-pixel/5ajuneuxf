@@ -2014,10 +2014,14 @@ local function getAllEggOnBelt()
 				name = eggName,
 				mutate = mutateValue
 			})
-            print(string.format("Found Egg on Belt - Name: %s | Mutation: %s", eggName, mutateValue))
+            
 		end
 	end
 
+    for _, egg in ipairs(results) do
+        print(string.format("Egg on Belt - Fullname: %s | Name: %s | Mutation: %s", egg.fullname, egg.name, egg.mutate))
+    end
+    
 	return results
 end
 
