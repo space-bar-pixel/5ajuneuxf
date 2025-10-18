@@ -2014,6 +2014,7 @@ local function getAllEggOnBelt()
 				name = eggName,
 				mutate = mutateValue
 			})
+            print(string.format("Found Egg on Belt - Name: %s | Mutation: %s", eggName, mutateValue))
 		end
 	end
 
