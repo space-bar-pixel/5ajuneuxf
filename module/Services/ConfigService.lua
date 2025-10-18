@@ -14,11 +14,6 @@ local function safeLoad(url)
     return result
 end
 
-local ConfigManager = safeLoad("https://raw.githubusercontent.com/space-bar-pixel/5ajuneuxf/main/module/ConfigManager.lua")
-if not ConfigManager then
-    error("Critical: ConfigManager failed to load; config system unavailable")
-end
-
 local ConfigService = {}
 ConfigService.__index = ConfigService
 
