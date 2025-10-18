@@ -6,12 +6,6 @@ local MacLib = {
 	end
 }
 
--- Shim for environments (executors) that don't provide the Font API
-if type(Font) ~= "table" or type(Font.new) ~= "function" then
-    -- Provide a minimal-compatible Font.new to avoid nil-call errors during UI init
-    Font = { new = function(...) return {} end }
-end
-
 --// Services
 local TweenService = MacLib.GetService("TweenService")
 local RunService = MacLib.GetService("RunService")
