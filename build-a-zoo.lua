@@ -1,6 +1,3 @@
--- build-a-zoo.lua
-
--- Helper to safely load remote modules
 local function loadRemote(url)
     local ok, result = pcall(function()
         local body = game:HttpGet(url)
