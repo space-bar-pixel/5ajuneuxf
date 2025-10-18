@@ -1,5 +1,34 @@
-local MacLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/space-bar-pixel/5ajuneuxf/refs/heads/main/module/maclib.lua"))()
-local ConfigManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/space-bar-pixel/5ajuneuxf/refs/heads/main/module/ConfigManager.lua"))()
+local function loadRemote(url)
+    local ok, result = pcall(function()
+        local body = game:HttpGet(url)
+        local fn, err = loadstring(body)
+        if not fn then error("compile error: " .. tostring(err)) end
+        return fn()
+    end)
+    if not ok then
+        warn("[build-a-zoo] failed to load: ", url, " - ", tostring(result), "\n", debug.traceback())
+        return nil
+    end
+    return result
+end
+
+local function _logLoaded(name, obj)
+    local t = type(obj)
+    if t == "table" then    
+        -- check for a few known markers
+        local markers = {}
+        if obj.Window then table.insert(markers, "Window") end
+        if obj.Options then table.insert(markers, "Options") end
+        if obj.Folder then table.insert(markers, "Folder") end
+        print(string.format("[build-a-zoo] loaded %s => type=%s markers=%s", name, t, table.concat(markers, ",")))
+    else
+        print(string.format("[build-a-zoo] loaded %s => type=%s", name, t))
+    end
+end
+
+-- Load Modules
+local MacLib = loadRemote("https://raw.githubusercontent.com/space-bar-pixel/5ajuneuxf/refs/heads/main/module/maclib.lua") or {}
+_logLoaded("MacLib", MacLib)
 
 -- Services
 local Players = game:GetService("Players")
@@ -62,6 +91,8 @@ local FruitSec1 = FruitTab:Section({ Side = "Left" })
 local dupeSec1 = DupeTab:Section({ Side = "Left" })
 
 local SettingGroup = Window:TabGroup()
+local Misc = SettingGroup:Tab({ Name = "Misc", Image = "" })
+local miscSec1 = Misc:Section({ Side = "Left" })
 local Setting = SettingGroup:Tab({ Name = "Setting", Image = "" })
 Setting:InsertConfigSection({ Side = "Left" })
 local settingSec2 = Setting:Section({ Side = "Right" })
@@ -109,6 +140,9 @@ local Menu = {
 		auto = { 
 			autoSec1 = autoSec1 
 		},
+        misc = {
+            miscSec1 = miscSec1
+        },
 		setting = {
 			settingSec2 = settingSec2
 		}
@@ -2198,7 +2232,7 @@ local AutoBuyFToggle = Menu.tabs.fruit.left1:Toggle({
                             end
                         end
                     end
-                    task.wait(1)
+                    task.wait(0.1)
                 end
             end)
         end
@@ -2258,6 +2292,54 @@ local AutoFarmToggle = Menu.tabs.auto.autoSec1:Toggle({
 		end
 	end
 }, "AutoFarmToggle")
+
+-----------------------------------------------------------
+-- MISC TAB
+-----------------------------------------------------------
+
+local tasksFrame = player:WaitForChild("PlayerGui"):WaitForChild("ScreenDino")
+                         :WaitForChild("Root"):WaitForChild("TasksFrame")
+                         :WaitForChild("Frame"):WaitForChild("ScrollingFrame")
+local autoClaim = false
+
+Menu.tabs.misc.miscSec1:Toggle({
+    Name = "Auto Claim Events (EXPERIMENTAL)",
+    Default = false,
+    Callback = function(enabled)
+        autoClaim = enabled
+        print("[DEBUG] Auto Claim Events toggled:", enabled)
+
+        if enabled then
+            task.spawn(function()
+                while autoClaim do
+                    local claimed = false
+                    for _, taskItem in ipairs(tasksFrame:GetChildren()) do
+                        local claimBtn = taskItem:FindFirstChild("ClaimButton")
+                        if claimBtn and claimBtn.Visible then
+                            print("[DEBUG] Claiming task:", taskItem.Name)
+
+                            if claimBtn:IsA("TextButton") or claimBtn:IsA("ImageButton") then
+                                claimBtn.MouseButton1Click:Fire()
+                            end
+
+                            claimed = true
+                            break
+                        end
+                    end
+
+                    if not claimed then
+                        print("[DEBUG] No claimable tasks found this loop.")
+                    end
+
+                    task.wait(0.5)
+                end
+                print("[DEBUG] Auto Claim loop stopped.")
+            end)
+        else
+            print("[DEBUG] Auto Claim disabled.")
+        end
+    end,
+}, "AutoClaimEventsToggle")
 
 -----------------------------------------------------------
 -- SETTING TAB
