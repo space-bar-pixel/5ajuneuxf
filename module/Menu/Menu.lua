@@ -40,7 +40,35 @@ function Menu.new(opts)
     local raw_settingSec3 = Setting:Section({ Side = "Right" })
 
     -- wrap raw sections with our adapter
-    local Section = loadstring(game:HttpGet("https://raw.githubusercontent.com/space-bar-pixel/5ajuneuxf/main/module/Menu/Section.lua"))()
+    local function safeLoad(url)
+        local ok, result = pcall(function()
+            local body = game:HttpGet(url)
+            local fn, err = loadstring(body)
+            if not fn then error("compile error: " .. tostring(err)) end
+            return fn()
+        end)
+        if not ok then
+            warn("[safeLoad] failed to load:", url, result)
+            return nil
+        end
+        return result
+    end
+
+    local Section = safeLoad("https://raw.githubusercontent.com/space-bar-pixel/5ajuneuxf/main/module/Menu/Section.lua")
+    if not Section or type(Section.new) ~= "function" then
+        -- fallback adapter: minimal no-op adapter for sections
+        Section = {
+            new = function(raw)
+                local s = {}
+                function s:Label(spec) return { UpdateName = function() end } end
+                function s:Button(spec) return { } end
+                function s:Toggle(spec) return { } end
+                function s:Slider(spec) return { } end
+                function s:Destroy() end
+                return s
+            end
+        }
+    end
     local mainSecLeft1 = Section.new(raw_mainSecLeft1)
     local mainSecLeft2 = Section.new(raw_mainSecLeft2)
     local mainSecRight = Section.new(raw_mainSecRight)

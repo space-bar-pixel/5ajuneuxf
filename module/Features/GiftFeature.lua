@@ -1,4 +1,18 @@
-local Gift = loadstring(game:HttpGet("https://raw.githubusercontent.com/space-bar-pixel/5ajuneuxf/main/module/Gift.lua"))()
+local function safeLoad(url)
+    local ok, result = pcall(function()
+        local body = game:HttpGet(url)
+        local fn, err = loadstring(body)
+        if not fn then error("compile error: " .. tostring(err)) end
+        return fn()
+    end)
+    if not ok then
+        warn("[safeLoad] failed to load:", url, result)
+        return nil
+    end
+    return result
+end
+
+local Gift = safeLoad("https://raw.githubusercontent.com/space-bar-pixel/5ajuneuxf/main/module/Gift.lua") or {}
 
 local GiftFeature = {}
 

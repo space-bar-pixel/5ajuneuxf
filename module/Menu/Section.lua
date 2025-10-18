@@ -1,6 +1,30 @@
-local Toggle = loadstring(game:HttpGet("https://raw.githubusercontent.com/space-bar-pixel/5ajuneuxf/main/module/Menu/Controls/Toggle.lua"))()
-local Button = loadstring(game:HttpGet("https://raw.githubusercontent.com/space-bar-pixel/5ajuneuxf/main/module/Menu/Controls/Button.lua"))()
-local Slider = loadstring(game:HttpGet("https://raw.githubusercontent.com/space-bar-pixel/5ajuneuxf/main/module/Menu/Controls/Slider.lua"))()
+local function safeLoad(url)
+    local ok, result = pcall(function()
+        local body = game:HttpGet(url)
+        local fn, err = loadstring(body)
+        if not fn then error("compile error: " .. tostring(err)) end
+        return fn()
+    end)
+    if not ok then
+        warn("[safeLoad] failed to load:", url, result)
+        return nil
+    end
+    return result
+end
+
+local Toggle = safeLoad("https://raw.githubusercontent.com/space-bar-pixel/5ajuneuxf/main/module/Menu/Controls/Toggle.lua")
+local Button = safeLoad("https://raw.githubusercontent.com/space-bar-pixel/5ajuneuxf/main/module/Menu/Controls/Button.lua")
+local Slider = safeLoad("https://raw.githubusercontent.com/space-bar-pixel/5ajuneuxf/main/module/Menu/Controls/Slider.lua")
+
+-- Fallback minimal stubs when controls fail to load
+local function makeStub()
+    return {
+        create = function() return { UpdateState = function() end, UpdateValue = function() end, UpdateText = function() end, UpdateName = function() end } end
+    }
+end
+Toggle = Toggle or makeStub()
+Button = Button or makeStub()
+Slider = Slider or makeStub()
 
 local Section = {}
 
