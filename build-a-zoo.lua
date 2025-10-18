@@ -40,7 +40,7 @@ local Window = MacLib:Window({
 	AcrylicBlur = true,
 })
 
-local BuildFolderTre = MacLib:SetFolder("PizzaHub/" .. player.Name .. "/configs")
+local BuildFolderTre = MacLib:SetFolder("PizzaHub")
 -----------------------------------------------------------
 -- Define Sections (your structure)
 -----------------------------------------------------------
@@ -63,10 +63,8 @@ local dupeSec1 = DupeTab:Section({ Side = "Left" })
 
 local SettingGroup = Window:TabGroup()
 local Setting = SettingGroup:Tab({ Name = "Setting", Image = "" })
-Setting:InsertConfigSection( Side = "Left" )
-local settingSec1 = Setting:Section({ Side = "Left" })
-local settingSec2 = Setting:Section({ Side = "Left" })
-local settingSec3 = Setting:Section({ Side = "Right" })
+Setting:InsertConfigSection({ Side = "Left" })
+local settingSec2 = Setting:Section({ Side = "Right" })
 
 -----------------------------------------------------------
 -- Menu Table
@@ -111,10 +109,8 @@ local Menu = {
 		auto = { 
 			autoSec1 = autoSec1 
 		},
-		setting = { 
-			settingSec1 = settingSec1, 
-			settingSec2 = settingSec2, 
-			settingSec3 = settingSec3 
+		setting = {
+			settingSec2 = settingSec2
 		}
 	},
 	system = {
@@ -1458,6 +1454,7 @@ GetEggsInv()
 local playerDropdown = Menu.tabs.main.left1:Dropdown({
 	Name = "Select Player",
 	Options = {},
+    IgnoreConfig = true,
 	Multi = false,
 	Callback = function(selected)
 		selectedPlayerName = selected
@@ -2213,7 +2210,7 @@ local AutoFarmToggle = Menu.tabs.auto.autoSec1:Toggle({
 -- SETTING TAB
 -----------------------------------------------------------
 
-Menu.tabs.setting.settingSec3:Keybind({
+Menu.tabs.setting.settingSec2:Keybind({
 	Name = "Set Key Bind",
 	onBinded = function(bind)
 		Menu.system.keyBind = bind or Enum.KeyCode.K
@@ -2225,7 +2222,7 @@ Menu.tabs.setting.settingSec3:Keybind({
 	end,
 }, "ResetKeyBind")
 
-Menu.tabs.setting.settingSec3:Button({
+Menu.tabs.setting.settingSec2:Button({
 	Name = "Kill Menu",
 	Callback = function()
 		Window:Unload()
