@@ -36,7 +36,7 @@ function GiftFeature.mount(ctx)
             Placeholder = "                   ",
             AcceptedCharacters = "Numeric",
             Callback = function(val)
-                fruitAmounts[fruit.fullname] = val
+                state.fruitAmounts[fruit.fullname] = val
             end
         })
     end
