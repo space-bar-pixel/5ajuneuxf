@@ -40,7 +40,7 @@ local Window = MacLib:Window({
 	AcrylicBlur = true,
 })
 
-local BuildFolderTre = MacLib:SetFolder("PizzaHub")
+local BuildFolderTree = MacLib:SetFolder("PizzaHub")
 -----------------------------------------------------------
 -- Define Sections (your structure)
 -----------------------------------------------------------

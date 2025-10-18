@@ -5474,17 +5474,22 @@ function MacLib:Window(Settings)
 	}
 
 	local function BuildFolderTree()
-		if isStudio or not (isfolder and makefolder) then return "Config system unavailable." end
+		if isStudio or not (isfolder and makefolder) then 
+			return "Config system unavailable." 
+		end
 
+		-- Root path: MacLib.Folder / PlayerName / settings
+		local base = MacLib.Folder
+		local playerFolder = LocalPlayer.Name
 		local paths = {
-			MacLib.Folder,
-			MacLib.Folder .. "/settings"
+			base,
+			string.format("%s/%s", base, playerFolder),
+			string.format("%s/%s/settings", base, playerFolder)
 		}
 
-		for i = 1, #paths do
-			local str = paths[i]
-			if not isfolder(str) then
-				makefolder(str)
+		for _, path in ipairs(paths) do
+			if not isfolder(path) then
+				makefolder(path)
 			end
 		end
 	end
@@ -5492,21 +5497,22 @@ function MacLib:Window(Settings)
 	function MacLib:LoadAutoLoadConfig()
 		if isStudio or not (isfile and readfile) then return "Config system unavailable." end
 
-		if isfile(MacLib.Folder .. "/settings/autoload.txt") then
-			local name = readfile(MacLib.Folder .. "/settings/autoload.txt")
-
+		local path = string.format("%s/%s/settings/autoload.txt", MacLib.Folder, MacLib.PlayerName)
+		if isfile(path) then
+			local name = readfile(path)
 			local suc, err = MacLib:LoadConfig(name)
+
 			if not suc then
 				WindowFunctions:Notify({
 					Title = "Interface",
 					Description = "Error loading autoload config: " .. err
 				})
+			else
+				WindowFunctions:Notify({
+					Title = "Interface",
+					Description = string.format("Autoloaded config: %q", name)
+				})
 			end
-
-			WindowFunctions:Notify({
-				Title = "Interface",
-				Description = string.format("Autoloaded config: %q", name),
-			})
 		end
 	end
 
@@ -5518,28 +5524,23 @@ function MacLib:Window(Settings)
 	end
 
 	function MacLib:SaveConfig(Path)
-		if isStudio or not writefile then return "Config system unavailable." end
+		if isStudio or not writefile then return false, "Config system unavailable." end
+		if not Path then return false, "Please select a config file." end
 
-		if (not Path) then
-			return false, "Please select a config file."
-		end
+		local fullPath = string.format("%s/%s/settings/%s.json", MacLib.Folder, MacLib.PlayerName, Path)
 
-		local fullPath = MacLib.Folder .. "/settings/" .. Path .. ".json"
-
-		local data = {
-			objects = {}
-		}
+		local data = { objects = {} }
 
 		for flag, option in next, MacLib.Options do
 			if not ClassParser[option.Class] then continue end
 			if option.IgnoreConfig then continue end
 
 			table.insert(data.objects, ClassParser[option.Class].Save(flag, option))
-		end	
+		end
 
 		local success, encoded = pcall(HttpService.JSONEncode, HttpService, data)
 		if not success then
-			return false, "Unable to encode into JSON data"
+			return false, "Unable to encode JSON data"
 		end
 
 		writefile(fullPath, encoded)
@@ -5547,13 +5548,10 @@ function MacLib:Window(Settings)
 	end
 
 	function MacLib:LoadConfig(Path)
-		if isStudio or not (isfile and readfile) then return "Config system unavailable." end
+		if isStudio or not (isfile and readfile) then return false, "Config system unavailable." end
+		if not Path then return false, "Please select a config file." end
 
-		if (not Path) then
-			return false, "Please select a config file."
-		end
-
-		local file = MacLib.Folder .. "/settings/" .. Path .. ".json"
+		local file = string.format("%s/%s/settings/%s.json", MacLib.Folder, MacLib.PlayerName, Path)
 		if not isfile(file) then return false, "Invalid file" end
 
 		local success, decoded = pcall(HttpService.JSONDecode, HttpService, readfile(file))
@@ -5561,8 +5559,8 @@ function MacLib:Window(Settings)
 
 		for _, option in next, decoded.objects do
 			if ClassParser[option.type] then
-				task.spawn(function() 
-					ClassParser[option.type].Load(option.flag, option) 
+				task.spawn(function()
+					ClassParser[option.type].Load(option.flag, option)
 				end)
 			end
 		end
@@ -5571,17 +5569,18 @@ function MacLib:Window(Settings)
 	end
 
 	function MacLib:RefreshConfigList()
-		if isStudio or not (isfolder and listfiles) then return "Config system unavailable." end
+		if isStudio or not (isfolder and listfiles) then return {} end
 
-		local list = (isfolder(MacLib.Folder) and isfolder(MacLib.Folder .. "/settings")) and listfiles(MacLib.Folder .. "/settings") or {}
+		local settingsDir = string.format("%s/%s/settings", MacLib.Folder, MacLib.PlayerName)
+		if not isfolder(settingsDir) then return {} end
 
+		local list = listfiles(settingsDir)
 		local out = {}
-		for i = 1, #list do
-			local file = list[i]
+
+		for _, file in ipairs(list) do
 			if file:sub(-5) == ".json" then
 				local pos = file:find(".json", 1, true)
 				local start = pos
-
 				local char = file:sub(pos, pos)
 				while char ~= "/" and char ~= "\\" and char ~= "" do
 					pos = pos - 1
