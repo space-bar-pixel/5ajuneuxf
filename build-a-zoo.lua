@@ -2090,39 +2090,6 @@ local function getAllEggOnBelt()
 	return results
 end
 
-local function getAllEggOnBelt()
-	local results = {}
-	if not belt then return results end
-
-	for _, obj in ipairs(belt:GetChildren()) do
-		local rootPart = obj:FindFirstChild("RootPart")
-		if not rootPart then continue end
-
-		local gui = rootPart:FindFirstChild("GUI/EggGUI")
-		if not gui then continue end
-
-		local eggNameObj = gui:FindFirstChild("EggName")
-		local mutateObj = gui:FindFirstChild("Mutate")
-
-		if eggNameObj and eggNameObj:IsA("TextLabel") and mutateObj and mutateObj:IsA("TextLabel") then
-			local eggName = eggNameObj.Text ~= "" and eggNameObj.Text or "Unknown"
-			local mutateValue = mutateObj.Text ~= "" and mutateObj.Text or "Dino"
-
-			table.insert(results, {
-				fullname = obj.Name,
-				name = eggName,
-				mutate = mutateValue
-			})
-		end
-	end
-
-    -- for _, egg in ipairs(results) do
-    --     print(string.format("Egg on Belt - Fullname: %s | Name: %s | Mutation: %s", egg.fullname, egg.name, egg.mutate))
-    -- end
-
-	return results
-end
-
 -- Eggs Dropdown
 local EggDropdown3 = Menu.tabs.egg.right1:Dropdown({
 	Name = "Eggs List",
